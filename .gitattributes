@@ -1,0 +1,20 @@
+# Ensure shell scripts always use Unix line endings (LF)
+# Critical: Windows CRLF line endings break bash scripts on Linux
+*.sh        text eol=lf
+run.sh      text eol=lf
+bootstrap.sh text eol=lf
+
+# Text files — normalize
+*.md        text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.json      text eol=lf
+*.conf      text eol=lf
+*.html      text eol=lf
+Dockerfile  text eol=lf
+
+# Binary files — no conversion
+*.png       binary
+*.ico       binary
+*.jpg       binary
+*.gif       binary
