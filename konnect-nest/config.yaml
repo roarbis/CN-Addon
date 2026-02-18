@@ -1,0 +1,93 @@
+# ============================================================
+#  Konnect Nest Add-on — config.yaml
+#
+#  Versioning convention:
+#    KN version mirrors HA version it was built/tested against.
+#    KN 2025.1.0 = tested on HA 2025.1.x
+#    KN 2025.4.0 = tested on HA 2025.4.x  (quarterly update)
+#
+#  Compatibility:
+#    homeassistant field = MINIMUM HA version required.
+#    HA Supervisor will not offer this add-on to instances
+#    running older than the declared minimum.
+# ============================================================
+
+name: "Konnect Nest"
+version: "2025.1.0"
+slug: "konnect_nest"
+description: "Your smart home, beautifully connected."
+url: "https://github.com/roarbis/KN-Addon"
+
+# Minimum HA version — covers all installs from 2024.1 onwards
+homeassistant: "2024.1.0"
+
+# Supported architectures
+arch:
+  - amd64      # VirtualBox VMs, Intel/AMD NUC
+  - aarch64    # Raspberry Pi 4/5
+  - armv7      # Raspberry Pi 3
+  - armhf      # Older Pi / ARM devices
+  - i386       # Legacy 32-bit (rare)
+
+# Port mapping — nginx serves branded interface on port 80
+ports:
+  80/tcp: 7080
+  443/tcp: 7443
+
+ports_description:
+  80/tcp: "Konnect Nest web interface (HTTP)"
+  443/tcp: "Konnect Nest web interface (HTTPS)"
+
+# Add-on options (configurable by user in HA UI)
+options:
+  ha_port: 8123
+  ssl: false
+  certfile: "fullchain.pem"
+  keyfile: "privkey.pem"
+
+schema:
+  ha_port: int
+  ssl: bool
+  certfile: str
+  keyfile: str
+
+# Add-on capabilities
+host_network: true          # Required to reach HA on localhost:8123
+privileged: false
+full_access: false
+
+# Ingress — embeds KN interface directly inside HA sidebar
+# This means friends see "Konnect Nest" in their sidebar
+# and clicking it opens the branded interface inside HA
+ingress: true
+ingress_port: 8099
+ingress_stream: false
+
+# Panel config — shows in HA sidebar
+panel_icon: "mdi:home-lightning-bolt-outline"
+panel_title: "Konnect Nest"
+panel_admin: false          # All users see it, not just admins
+
+# Image — built locally on friend's machine from Dockerfile
+# (no external registry needed for now)
+# To use pre-built images later:
+# image: "ghcr.io/roarbis/konnect-nest-{arch}"
+
+# Resource limits
+map:
+  - ssl                     # Access to HA SSL cert directory
+
+# Startup order
+startup: "application"
+boot: "auto"               # Start automatically on HA boot
+
+# Add-on metadata
+init: false
+hassio_api: true           # Read HA Supervisor API (for version checking)
+hassio_role: "default"
+
+# Watchdog — auto-restart if add-on crashes
+watchdog: "http://[HOST]:8099/"
+
+# Changelog shown in HA UI
+# Points to GitHub releases page
