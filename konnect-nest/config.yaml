@@ -53,15 +53,12 @@ schema:
 
 # Add-on capabilities
 host_network: true          # Required to reach HA on localhost:8123
-privileged: false
-full_access: false
 
 # Ingress — embeds CN interface directly inside HA sidebar
 # This means friends see "Connect Nest" in their sidebar
 # and clicking it opens the branded interface inside HA
 ingress: true
 ingress_port: 8099
-ingress_stream: false
 
 # Panel config — shows in HA sidebar
 panel_icon: "mdi:home-lightning-bolt-outline"
