@@ -23,7 +23,7 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Connect Nest v2025.1.0"
+info "  Connect Nest v2025.2.0"
 info "  Your smart home, beautifully connected."
 info "============================================"
 info "HA backend port: ${HA_PORT}"
@@ -130,6 +130,13 @@ http {
             proxy_set_header X-Ingress-Path \$http_x_ingress_path;
         }
 
+        # CN background image (bundled in Docker image)
+        location = /cn-bg.jpg {
+            alias /usr/share/nginx/cn-override/static/cn-bg.jpg;
+            expires 30d;
+            add_header Cache-Control "public";
+        }
+
         # All traffic → HA Core with runtime branding replacement
         location / {
             proxy_pass http://ha_backend;
@@ -151,6 +158,7 @@ http {
             sub_filter_once off;
             sub_filter 'Home Assistant' 'Connect Nest';
             sub_filter 'home-assistant' 'connect-nest';
+            sub_filter '</head>' '<link rel="apple-touch-icon" sizes="180x180" href="/static/icons/cn-icon-180.png"><link rel="apple-touch-icon" sizes="152x152" href="/static/icons/cn-icon-152.png"><link rel="apple-touch-icon" sizes="120x120" href="/static/icons/cn-icon-120.png"><meta name="apple-mobile-web-app-title" content="Connect Nest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&family=Baumans&display=swap"></head>';
             sub_filter_types text/html text/javascript application/javascript application/json;
 
             proxy_buffer_size 128k;
@@ -196,6 +204,13 @@ http {
             proxy_pass http://ha_backend;
         }
 
+        # CN background image (bundled in Docker image)
+        location = /cn-bg.jpg {
+            alias /usr/share/nginx/cn-override/static/cn-bg.jpg;
+            expires 30d;
+            add_header Cache-Control "public";
+        }
+
         location / {
             proxy_pass http://ha_backend;
             proxy_http_version 1.1;
@@ -210,6 +225,7 @@ http {
             sub_filter_once off;
             sub_filter 'Home Assistant' 'Connect Nest';
             sub_filter 'home-assistant' 'connect-nest';
+            sub_filter '</head>' '<link rel="apple-touch-icon" sizes="180x180" href="/static/icons/cn-icon-180.png"><link rel="apple-touch-icon" sizes="152x152" href="/static/icons/cn-icon-152.png"><link rel="apple-touch-icon" sizes="120x120" href="/static/icons/cn-icon-120.png"><meta name="apple-mobile-web-app-title" content="Connect Nest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&family=Baumans&display=swap"></head>';
             sub_filter_types text/html text/javascript application/javascript application/json;
 
             proxy_buffer_size 128k;
@@ -236,6 +252,58 @@ success "nginx configured"
 info "Validating nginx configuration..."
 nginx -t 2>&1 || error "nginx config validation failed — check logs above"
 success "nginx config valid"
+
+# ─── First-run CN setup ─────────────────────────────────────
+# Installs theme + card-mod into HA config on first start only
+MARKER=/config/.cn_setup_done
+if [[ ! -f "$MARKER" ]]; then
+    info "First run — installing CN theme and card-mod..."
+
+    # Copy card-mod.js to HA's local www directory
+    mkdir -p /config/www
+    cp /usr/share/nginx/cn-override/card-mod.js /config/www/card-mod.js
+    info "card-mod.js copied to /config/www/"
+
+    # Try registering card-mod via Lovelace resources API (no HA restart needed)
+    LOVELACE_STATUS=""
+    if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
+        LOVELACE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"url": "/local/card-mod.js", "res_type": "module"}' \
+            "http://supervisor/core/api/lovelace/resources" 2>/dev/null)
+    fi
+
+    if [[ "$LOVELACE_STATUS" =~ ^2 ]]; then
+        success "card-mod registered via Lovelace API (no restart needed)"
+    else
+        warn "Lovelace API unavailable (${LOVELACE_STATUS:-no token}) — card-mod added to configuration.yaml"
+        warn "Restart HA once for card-mod to take effect"
+    fi
+
+    # Copy CN dark theme to HA themes directory
+    mkdir -p /config/themes
+    cp /usr/share/nginx/cn-override/themes/cn_dark.yaml /config/themes/cn_dark.yaml
+    success "CN dark theme installed to /config/themes/"
+
+    # Add frontend: themes + extra_module_url to configuration.yaml if not present
+    if ! grep -q "^frontend:" /config/configuration.yaml 2>/dev/null; then
+        printf '\nfrontend:\n  themes: !include_dir_merge_named themes\n  extra_module_url:\n    - /local/card-mod.js\n' \
+            >> /config/configuration.yaml
+        info "Added frontend config to configuration.yaml"
+    fi
+
+    touch "$MARKER"
+    success "CN setup complete"
+fi
+
+# Always reload themes (picks up theme file updates on version upgrades)
+if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
+    curl -s -X POST \
+        -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+        "http://supervisor/core/api/services/frontend/reload_themes" > /dev/null 2>&1 || true
+fi
 
 # ─── Wait for HA Core to be ready ──────────────────────────
 info "Waiting for HA Core to be ready on port ${HA_PORT}..."

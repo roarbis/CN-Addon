@@ -13,7 +13,7 @@
 # ============================================================
 
 name: "Connect Nest"
-version: "2025.1.1"
+version: "2025.2.0"
 slug: "connect_nest"
 description: "Your smart home, beautifully connected."
 url: "https://github.com/roarbis/CN-Addon"
@@ -73,6 +73,7 @@ panel_admin: false          # All users see it, not just admins
 # Resource limits
 map:
   - ssl                     # Access to HA SSL cert directory
+  - config:rw               # Read/write to /config/ for theme + card-mod install
 
 # Startup order
 startup: "application"
@@ -80,8 +81,8 @@ boot: "auto"               # Start automatically on HA boot
 
 # Add-on metadata
 init: false
-hassio_api: true           # Read HA Supervisor API (for version checking)
-hassio_role: "default"
+hassio_api: true           # Access HA Supervisor API (version check + Lovelace resources)
+hassio_role: "manager"     # Required to register Lovelace resources (card-mod) via API
 
 # Watchdog — auto-restart if add-on crashes
 watchdog: "http://[HOST]:8099/"
