@@ -13,7 +13,7 @@
 # ============================================================
 
 name: "Connect Nest"
-version: "2025.3.2"
+version: "2025.3.3"
 slug: "connect_nest"
 description: "Your smart home, beautifully connected."
 url: "https://github.com/roarbis/CN-Addon"
@@ -83,6 +83,7 @@ boot: "auto"               # Start automatically on HA boot
 init: false
 hassio_api: true           # Access HA Supervisor API (version check + Lovelace resources)
 hassio_role: "manager"     # Required to register Lovelace resources (card-mod) via API
+homeassistant_api: true    # Access HA Core REST API via http://homeassistant (backup config etc.)
 
 # Watchdog — auto-restart if add-on crashes
 watchdog: "http://[HOST]:8099/"

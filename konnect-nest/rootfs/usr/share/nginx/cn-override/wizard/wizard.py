@@ -32,15 +32,41 @@ def _supervisor_req(method, path, body=None, timeout=60):
             return resp.status, json.loads(raw) if raw else {}
     except urllib.error.HTTPError as e:
         raw = e.read()
-        return e.code, json.loads(raw) if raw else {}
+        try:
+            body = json.loads(raw) if raw else {}
+        except Exception:
+            body = {'_raw': raw.decode('utf-8', errors='replace') if raw else ''}
+        return e.code, body
     except Exception as e:
         return 0, {'error': str(e)}
 
 def supervisor(method, path, body=None, timeout=60):
     return _supervisor_req(method, path, body, timeout)
 
-def ha_api(method, path, body=None):
-    return _supervisor_req(method, f'/core/api{path}', body)
+def ha_core_api(method, path, body=None):
+    """Call HA Core REST API via http://homeassistant (requires homeassistant_api: true).
+    Uses a different base than the Supervisor proxy (/core/api) which does NOT
+    forward authentication to HA Core and returns 401."""
+    url = f'http://homeassistant/api{path}'
+    headers = {
+        'Authorization': f'Bearer {SUPERVISOR_TOKEN}',
+        'Content-Type': 'application/json',
+    }
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            raw = resp.read()
+            return resp.status, json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as e:
+        raw = e.read()
+        try:
+            bd = json.loads(raw) if raw else {}
+        except Exception:
+            bd = {}
+        return e.code, bd
+    except Exception as e:
+        return 0, {'error': str(e)}
 
 # ─── Wizard state persistence ────────────────────────────────────
 
@@ -152,8 +178,9 @@ def restart_ha_and_wait(timeout=240):
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
-            status, _ = ha_api('GET', '/')
-            if status in (200, 401):  # 401 = HA up, just needs auth token
+            # Use Supervisor /core/info — pure Supervisor API, no HA auth needed
+            status, data = supervisor('GET', '/core/info', timeout=10)
+            if status == 200 and (data.get('data') or {}).get('version'):
                 return True
         except Exception:
             pass
@@ -191,11 +218,18 @@ class WizardHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split('?')[0]
+        try:
+            self._do_GET(path)
+        except Exception as e:
+            self.send_json(500, {'error': str(e), 'type': type(e).__name__})
 
+    def _do_GET(self, path):
         if path == '/onboarding/api/status':
             state = load_state()
-            _, ha_data = ha_api('GET', '/config')
-            version = (ha_data.get('data') or {}).get('version', 'unknown')
+            # Use Supervisor /core/info — pure Supervisor endpoint, no HA auth needed.
+            # Do NOT use /core/api/... which proxies to HA Core and returns 401.
+            _, info = supervisor('GET', '/core/info')
+            version = (info.get('data') or {}).get('version', 'unknown')
             self.send_json(200, {
                 'ha_version': version,
                 'ha_online': version != 'unknown',
@@ -220,8 +254,14 @@ class WizardHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path.split('?')[0]
-        body = self.parse_body()
-        state = load_state()
+        try:
+            body = self.parse_body()
+            state = load_state()
+            self._do_POST(path, body, state)
+        except Exception as e:
+            self.send_json(500, {'ok': False, 'error': str(e), 'type': type(e).__name__})
+
+    def _do_POST(self, path, body, state):
 
         # ── Step: Studio Code Server ──
         if path == '/onboarding/api/step/studio-code':
@@ -376,7 +416,8 @@ class WizardHandler(BaseHTTPRequestHandler):
             copies = int(body.get('copies', 3))
 
             # HA 2024.6+ native backup schedule API
-            ha_api('POST', '/backup/config/update', {
+            # Uses ha_core_api (http://homeassistant) — requires homeassistant_api: true
+            ha_core_api('POST', '/backup/config/update', {
                 'schedule': {'state': schedule},
                 'retention': {'copies': copies},
             })
