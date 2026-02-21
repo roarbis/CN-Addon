@@ -26,9 +26,9 @@ RUN mkdir -p \
 COPY rootfs/usr/share/nginx/cn-override/ /usr/share/nginx/cn-override/
 
 # Download card-mod.js from latest GitHub release (bundled into image)
-RUN CARD_MOD_URL=$(curl -s https://api.github.com/repos/thomasloven/lovelace-card-mod/releases/latest \
-    | jq -r '.assets[] | select(.name == "card-mod.js") | .browser_download_url') \
-    && curl -sL "$CARD_MOD_URL" -o /usr/share/nginx/cn-override/card-mod.js
+# Uses GitHub's /releases/latest/download/ redirect — no API call needed
+RUN curl -sL "https://github.com/thomasloven/lovelace-card-mod/releases/latest/download/card-mod.js" \
+    -o /usr/share/nginx/cn-override/card-mod.js
 
 # Download CN background image (bundled into image)
 RUN curl -sL "https://raw.githubusercontent.com/rrao56/HA/refs/heads/main/CHBG3.jpg" \
