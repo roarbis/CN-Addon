@@ -23,7 +23,7 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Connect Nest v2025.2.0"
+info "  Connect Nest v2025.3.0"
 info "  Your smart home, beautifully connected."
 info "============================================"
 info "HA backend port: ${HA_PORT}"
@@ -137,6 +137,23 @@ http {
             add_header Cache-Control "public";
         }
 
+        # Onboarding wizard — API (proxied to Python backend on port 8098)
+        location /onboarding/api/ {
+            proxy_pass http://127.0.0.1:8098;
+            proxy_http_version 1.1;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_read_timeout 300;
+            proxy_send_timeout 300;
+        }
+
+        # Onboarding wizard — static frontend
+        location /onboarding/ {
+            alias /usr/share/nginx/cn-override/onboarding/;
+            try_files \$uri \$uri/ /onboarding/index.html;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+        }
+
         # All traffic → HA Core with runtime branding replacement
         location / {
             proxy_pass http://ha_backend;
@@ -209,6 +226,23 @@ http {
             alias /usr/share/nginx/cn-override/static/cn-bg.jpg;
             expires 30d;
             add_header Cache-Control "public";
+        }
+
+        # Onboarding wizard — API (proxied to Python backend on port 8098)
+        location /onboarding/api/ {
+            proxy_pass http://127.0.0.1:8098;
+            proxy_http_version 1.1;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_read_timeout 300;
+            proxy_send_timeout 300;
+        }
+
+        # Onboarding wizard — static frontend
+        location /onboarding/ {
+            alias /usr/share/nginx/cn-override/onboarding/;
+            try_files \$uri \$uri/ /onboarding/index.html;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
         }
 
         location / {
@@ -322,11 +356,20 @@ if [[ $WAITED -lt $MAX_WAIT ]]; then
     success "HA Core is ready"
 fi
 
+# ─── Start onboarding wizard backend ────────────────────────
+info "Starting CN Onboarding Wizard backend..."
+CN_HA_PORT="${HA_PORT}" \
+    python3 /usr/share/nginx/cn-wizard/wizard.py \
+    >> /proc/1/fd/1 2>&1 &
+WIZARD_PID=$!
+success "Wizard backend started (PID ${WIZARD_PID})"
+
 # ─── Start nginx ────────────────────────────────────────────
 info "Starting Connect Nest..."
 success "Connect Nest is running!"
 info "  Ingress (HA sidebar): port ${INGRESS_PORT}"
 info "  Direct access:        port 7080"
+info "  Onboarding wizard:    /onboarding/"
 info ""
 
 # Run nginx in foreground (required for Docker/add-on)

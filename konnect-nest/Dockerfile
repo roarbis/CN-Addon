@@ -7,9 +7,10 @@ FROM $BUILD_FROM
 #  BUILD_FROM is set automatically per architecture by Supervisor
 # ============================================================
 
-# Install nginx and required tools
+# Install nginx, Python3 (wizard backend), and required tools
 RUN apk add --no-cache \
     nginx \
+    python3 \
     curl \
     bash \
     jq
@@ -20,7 +21,8 @@ RUN mkdir -p \
     /var/lib/nginx/tmp \
     /usr/share/nginx/cn-override/static/icons \
     /etc/nginx/conf.d \
-    /run/nginx
+    /run/nginx \
+    /usr/share/nginx/cn-wizard
 
 # Copy Connect Nest branded override files
 COPY rootfs/usr/share/nginx/cn-override/ /usr/share/nginx/cn-override/
@@ -33,6 +35,9 @@ RUN curl -sL "https://github.com/thomasloven/lovelace-card-mod/releases/latest/d
 # Download CN background image (bundled into image)
 RUN curl -sL "https://raw.githubusercontent.com/rrao56/HA/refs/heads/main/CHBG3.jpg" \
     -o /usr/share/nginx/cn-override/static/cn-bg.jpg
+
+# Copy wizard backend
+COPY rootfs/usr/share/nginx/cn-override/wizard/wizard.py /usr/share/nginx/cn-wizard/wizard.py
 
 # Copy startup script
 COPY run.sh /run.sh
