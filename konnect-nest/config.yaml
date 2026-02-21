@@ -13,7 +13,7 @@
 # ============================================================
 
 name: "Connect Nest"
-version: "2025.3.0"
+version: "2025.3.1"
 slug: "connect_nest"
 description: "Your smart home, beautifully connected."
 url: "https://github.com/roarbis/CN-Addon"

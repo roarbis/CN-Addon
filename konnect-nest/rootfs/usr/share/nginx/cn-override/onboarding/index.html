@@ -8,23 +8,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&family=Baumans&display=swap">
 <style>
-  /* ── Reset & base ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --accent:       #15C7B4;
-    --accent-dim:   #3c8b8c;
-    --bg:           #3b4049;
-    --bg2:          #383e47;
-    --card-bg:      rgba(22, 25, 23, 0.95);
-    --text:         #ffffff;
-    --text-sec:     #BAC0C6;
-    --text-dim:     #80828A;
-    --border:       #5f7575;
-    --radius:       16px;
-    --error:        #e05c5c;
-    --warn:         #d4a843;
-    --ok:           #15C7B4;
+    --accent:      #15C7B4;
+    --accent-dim:  #3c8b8c;
+    --bg:          #3b4049;
+    --bg2:         #383e47;
+    --card-bg:     rgba(22, 25, 23, 0.95);
+    --text:        #ffffff;
+    --text-sec:    #BAC0C6;
+    --text-dim:    #80828A;
+    --border:      #5f7575;
+    --radius:      16px;
+    --error:       #e05c5c;
+    --warn:        #d4a843;
   }
 
   body {
@@ -35,253 +33,143 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 1rem;
+    padding: 2rem 1rem 3rem;
   }
 
   /* ── Header ── */
-  .cn-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  .cn-header img {
-    height: 60px;
-    margin-bottom: 0.75rem;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
-  }
-  .cn-header h1 {
-    font-family: 'Baumans', sans-serif;
-    font-size: 2rem;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-  .cn-header p {
-    color: var(--text-sec);
-    font-size: 0.95rem;
-    font-weight: 300;
-    margin-top: 0.25rem;
-  }
+  .cn-header { text-align: center; margin-bottom: 2rem; }
+  .cn-header h1 { font-family: 'Baumans', sans-serif; font-size: 2rem; color: var(--accent); letter-spacing: 0.05em; }
+  .cn-header p { color: var(--text-sec); font-size: 0.9rem; font-weight: 300; margin-top: 0.25rem; }
 
-  /* ── Progress bar ── */
-  .progress-track {
-    width: 100%;
-    max-width: 640px;
-    margin-bottom: 1.5rem;
-  }
-  .progress-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    margin-bottom: 0.4rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .progress-bar-outer {
-    height: 4px;
-    background: var(--bg2);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .progress-bar-inner {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 4px;
-    transition: width 0.4s ease;
-  }
+  /* ── Progress ── */
+  .progress-track { width: 100%; max-width: 660px; margin-bottom: 1.5rem; }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .progress-bar-outer { height: 4px; background: var(--bg2); border-radius: 4px; overflow: hidden; }
+  .progress-bar-inner { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
 
   /* ── Card ── */
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 2rem;
-    width: 100%;
-    max-width: 640px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 660px; backdrop-filter: blur(20px); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
 
   /* ── Step header ── */
-  .step-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .step-icon {
-    font-size: 2rem;
-    line-height: 1;
-    flex-shrink: 0;
-  }
-  .step-title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .step-subtitle {
-    font-size: 0.85rem;
-    color: var(--text-sec);
-    margin-top: 0.2rem;
-    font-weight: 300;
-  }
+  .step-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+  .step-icon { font-size: 2rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
+  .step-title { font-size: 1.3rem; font-weight: 700; }
+  .step-subtitle { font-size: 0.85rem; color: var(--text-sec); margin-top: 0.2rem; font-weight: 300; }
+  .step-badge { display: inline-block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.5rem; border-radius: 8px; margin-left: 0.5rem; vertical-align: middle; }
+  .badge-optional { background: rgba(212,168,67,0.2); color: var(--warn); }
+  .badge-mandatory { background: rgba(21,199,180,0.15); color: var(--accent); }
 
-  /* ── Form elements ── */
-  .field {
-    margin-bottom: 1.2rem;
+  /* ── Form ── */
+  .field { margin-bottom: 1.2rem; }
+  label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+  input[type=text], input[type=password], input[type=number], select {
+    width: 100%; padding: 0.65rem 0.85rem; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'Raleway', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;
   }
-  label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-sec);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.4rem;
-  }
-  input[type=text],
-  input[type=password],
-  input[type=number],
-  select {
-    width: 100%;
-    padding: 0.65rem 0.85rem;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Raleway', sans-serif;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  input:focus, select:focus {
-    border-color: var(--accent);
-  }
-  .field-row {
-    display: flex;
-    gap: 0.75rem;
-  }
+  input:focus, select:focus { border-color: var(--accent); }
+  .field-row { display: flex; gap: 0.75rem; }
   .field-row .field { flex: 1; margin-bottom: 0; }
-
-  /* ── Buttons ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.4rem;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Raleway', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: #0e1512; }
-  .btn-primary:hover:not(:disabled) { opacity: 0.88; }
-  .btn-secondary { background: transparent; color: var(--text-sec); border: 1px solid var(--border); }
-  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  .btn-skip { background: transparent; color: var(--text-dim); font-size: 0.8rem; padding: 0.5rem 0.75rem; }
-  .btn-actions { display: flex; gap: 0.75rem; align-items: center; margin-top: 1.5rem; }
+  .hint { font-size: 0.77rem; color: var(--text-dim); margin-top: 0.35rem; }
 
   /* ── Toggle rows ── */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(95,117,117,0.3);
-  }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 0; border-bottom: 1px solid rgba(95,117,117,0.3); gap: 1rem; }
   .toggle-row:last-child { border-bottom: none; }
   .toggle-info { flex: 1; }
   .toggle-name { font-weight: 600; font-size: 0.95rem; }
-  .toggle-desc { font-size: 0.8rem; color: var(--text-sec); margin-top: 0.15rem; }
-  .toggle-status {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.6rem;
-    border-radius: 12px;
-    font-weight: 600;
-    flex-shrink: 0;
-    margin-left: 1rem;
-  }
-  .status-pending  { background: rgba(95,117,117,0.3); color: var(--text-dim); }
-  .status-loading  { background: rgba(21,199,180,0.15); color: var(--accent); }
-  .status-done     { background: rgba(21,199,180,0.2); color: var(--accent); }
-  .status-error    { background: rgba(224,92,92,0.2); color: var(--error); }
-  .status-warning  { background: rgba(212,168,67,0.2); color: var(--warn); }
+  .toggle-desc { font-size: 0.8rem; color: var(--text-sec); margin-top: 0.2rem; }
+  .toggle-status { font-size: 0.72rem; padding: 0.25rem 0.6rem; border-radius: 12px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+  .status-pending  { background: rgba(95,117,117,0.3);   color: var(--text-dim); }
+  .status-loading  { background: rgba(21,199,180,0.15);  color: var(--accent); }
+  .status-done     { background: rgba(21,199,180,0.2);   color: var(--accent); }
+  .status-error    { background: rgba(224,92,92,0.2);    color: var(--error); }
+  .status-skip     { background: rgba(212,168,67,0.12);  color: var(--warn); }
 
-  /* ── Alert boxes ── */
-  .alert {
-    border-radius: 8px;
-    padding: 0.9rem 1rem;
-    font-size: 0.88rem;
-    margin-bottom: 1.25rem;
-    line-height: 1.5;
+  /* ── Checkbox toggle ── */
+  .cn-checkbox { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; user-select: none; }
+  .cn-checkbox input[type=checkbox] { display: none; }
+  .cn-checkbox .box {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
+    background: var(--bg2); display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
   }
-  .alert-info    { background: rgba(21,199,180,0.1); border: 1px solid rgba(21,199,180,0.3); color: var(--accent); }
-  .alert-warn    { background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.3); color: var(--warn); }
-  .alert-error   { background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.3); color: var(--error); }
-  .alert-success { background: rgba(21,199,180,0.1); border: 1px solid rgba(21,199,180,0.4); color: #a7f0e8; }
+  .cn-checkbox input:checked + .box { background: var(--accent); border-color: var(--accent); }
+  .cn-checkbox .box::after { content: '✓'; color: #0e1512; font-weight: 700; font-size: 0.8rem; opacity: 0; transition: opacity 0.15s; }
+  .cn-checkbox input:checked + .box::after { opacity: 1; }
+  .cn-checkbox .cx-label { font-size: 0.9rem; color: var(--text-sec); }
+
+  /* ── Buttons ── */
+  .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem; border: none; border-radius: 8px; font-family: 'Raleway', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary   { background: var(--accent); color: #0e1512; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+  .btn-secondary { background: transparent; color: var(--text-sec); border: 1px solid var(--border); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-actions { display: flex; gap: 0.75rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; }
+
+  /* ── Preflight grid ── */
+  .preflight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (max-width: 520px) { .preflight-grid { grid-template-columns: 1fr; } }
+  .preflight-col h3 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); margin-bottom: 0.9rem; }
+  .preflight-item { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(95,117,117,0.2); }
+  .preflight-item:last-child { border-bottom: none; }
+  .preflight-item .pi-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .preflight-item .pi-text { font-size: 0.85rem; color: var(--text-sec); line-height: 1.4; }
+  .preflight-item .pi-text strong { color: var(--text); }
+  .preflight-item .opt-tag { font-size: 0.62rem; color: var(--warn); background: rgba(212,168,67,0.15); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.3rem; font-weight: 700; text-transform: uppercase; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.55rem 0; border-bottom: 1px solid rgba(95,117,117,0.2); cursor: pointer; }
+  .checklist-item:last-child { border-bottom: none; }
+  .check-box { width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border); background: var(--bg2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-top: 0.05rem; }
+  .check-box.checked { background: var(--accent); border-color: var(--accent); }
+  .check-box.checked::after { content: '✓'; color: #0e1512; font-size: 0.75rem; font-weight: 700; }
+  .ci-text { font-size: 0.85rem; color: var(--text-sec); line-height: 1.4; }
+  .ci-text strong { color: var(--text); }
+  .ci-text .ci-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+  /* ── Alerts ── */
+  .alert { border-radius: 8px; padding: 0.9rem 1rem; font-size: 0.87rem; margin-bottom: 1.25rem; line-height: 1.5; }
+  .alert:last-child { margin-bottom: 0; }
+  .alert-info    { background: rgba(21,199,180,0.1);  border: 1px solid rgba(21,199,180,0.3); color: #9ee8e0; }
+  .alert-warn    { background: rgba(212,168,67,0.1);  border: 1px solid rgba(212,168,67,0.3); color: var(--warn); }
+  .alert-error   { background: rgba(224,92,92,0.1);   border: 1px solid rgba(224,92,92,0.3);  color: var(--error); }
+  .alert-success { background: rgba(21,199,180,0.1);  border: 1px solid rgba(21,199,180,0.4); color: #a7f0e8; }
 
   /* ── Spinner ── */
   @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 2px solid rgba(21,199,180,0.3);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-  }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(21,199,180,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
 
-  /* ── Restart progress ── */
-  .restart-anim {
-    text-align: center;
-    padding: 2rem 0;
-  }
-  .restart-anim .big-spinner {
-    width: 56px; height: 56px;
-    border: 4px solid rgba(21,199,180,0.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-  }
+  /* ── Restart ── */
+  .restart-anim { text-align: center; padding: 2rem 0; }
+  .restart-anim .big-spinner { width: 56px; height: 56px; border: 4px solid rgba(21,199,180,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
   .restart-anim p { color: var(--text-sec); }
 
-  /* ── Done step ── */
-  .done-hero {
-    text-align: center;
-    padding: 1rem 0 2rem;
-  }
-  .done-hero .check { font-size: 4rem; margin-bottom: 1rem; }
-  .done-hero h2 { font-family: 'Baumans', sans-serif; font-size: 2rem; color: var(--accent); }
-  .done-hero p { color: var(--text-sec); margin-top: 0.5rem; font-weight: 300; }
-  .summary-list { list-style: none; margin-top: 1.5rem; }
-  .summary-list li {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(95,117,117,0.25);
-    font-size: 0.9rem;
-    color: var(--text-sec);
-  }
+  /* ── Done ── */
+  .done-hero { text-align: center; padding: 0.5rem 0 1.5rem; }
+  .done-hero .check { font-size: 3.5rem; margin-bottom: 0.75rem; }
+  .done-hero h2 { font-family: 'Baumans', sans-serif; font-size: 1.8rem; color: var(--accent); }
+  .done-hero p { color: var(--text-sec); margin-top: 0.4rem; font-weight: 300; font-size: 0.95rem; }
+  .summary-list { list-style: none; margin: 1.25rem 0; }
+  .summary-list li { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(95,117,117,0.2); font-size: 0.88rem; color: var(--text-sec); }
   .summary-list li:last-child { border-bottom: none; }
-  .summary-list .tick { color: var(--accent); font-size: 1rem; }
-  .summary-list .skip { color: var(--text-dim); font-size: 1rem; }
+  .s-done { color: var(--accent); }
+  .s-skip { color: var(--text-dim); }
+  .s-label { flex: 1; }
+  .s-note { font-size: 0.78rem; color: var(--text-dim); margin-left: auto; }
 
-  /* ── Hint text ── */
-  .hint { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.35rem; }
+  /* ── After-wizard steps ── */
+  .after-steps { margin-top: 0.5rem; }
+  .after-steps li { font-size: 0.85rem; color: var(--text-sec); padding: 0.35rem 0; display: flex; align-items: flex-start; gap: 0.5rem; }
+  .after-steps li::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid rgba(95,117,117,0.3); margin: 1.25rem 0; }
+
+  /* ── Fade in ── */
+  .step-content { animation: fadeIn 0.22s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-
-  /* ── Hidden ── */
-  .hidden { display: none !important; }
-
-  /* ── Step fade ── */
-  .step-content { animation: fadeIn 0.25s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
@@ -293,7 +181,7 @@
 
 <div class="progress-track">
   <div class="progress-labels">
-    <span id="prog-label">Step 1 of 8</span>
+    <span id="prog-label">Step 1 of 10</span>
     <span id="prog-pct">0%</span>
   </div>
   <div class="progress-bar-outer">
@@ -306,14 +194,11 @@
 </div>
 
 <script>
-// ─── Wizard state ─────────────────────────────────────────────────────────────
+// ─── State ────────────────────────────────────────────────────────────────────
 const API = '/onboarding/api';
-const STEPS = [
-  'welcome', 'addons', 'restart', 'mqtt', 'zigbee', 'tailscale', 'backup', 'done'
-];
+const STEPS = ['welcome', 'preflight', 'addons', 'restart', 'mqtt', 'zigbee', 'tailscale', 'backup', 'onedrive', 'done'];
 let currentStep = 0;
-let skipped = {};
-let collected = {};  // form values carried between steps
+let collected = {};   // form values & user choices
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
 async function api(method, path, body) {
@@ -327,12 +212,12 @@ const post = (p, b) => api('POST', p, b);
 
 // ─── Progress ─────────────────────────────────────────────────────────────────
 function updateProgress() {
-  const total = STEPS.length - 1; // don't count 'done' as incomplete step
+  const total = STEPS.length - 1;
   const pct = Math.round((currentStep / total) * 100);
   document.getElementById('progress-bar').style.width = pct + '%';
   document.getElementById('prog-pct').textContent = pct + '%';
   document.getElementById('prog-label').textContent =
-    `Step ${Math.min(currentStep + 1, STEPS.length)} of ${STEPS.length}`;
+    `Step ${currentStep + 1} of ${STEPS.length}`;
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
@@ -341,126 +226,232 @@ function goTo(step) {
   updateProgress();
   render(step);
 }
-function next() { goTo(STEPS[currentStep + 1]); }
-function skip(step) { skipped[step] = true; next(); }
-
-// ─── Toast / alert helpers ────────────────────────────────────────────────────
-function makeAlert(type, msg) {
-  const d = document.createElement('div');
-  d.className = `alert alert-${type}`;
-  d.textContent = msg;
-  return d;
-}
-
-// ─── Status badge helpers ─────────────────────────────────────────────────────
-function badge(id, state, label) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = `toggle-status status-${state}`;
-  el.textContent = label;
+function next() {
+  const nextStep = STEPS[currentStep + 1];
+  // Skip restart if HACS was not opted in
+  if (nextStep === 'restart' && !collected.install_hacs) {
+    currentStep++;
+    goTo(STEPS[currentStep + 1]);
+    return;
+  }
+  goTo(nextStep);
 }
 
 // ─── Render dispatcher ────────────────────────────────────────────────────────
 function render(step) {
-  const renders = {
+  ({
     welcome:   renderWelcome,
+    preflight: renderPreflight,
     addons:    renderAddons,
     restart:   renderRestart,
     mqtt:      renderMqtt,
     zigbee:    renderZigbee,
     tailscale: renderTailscale,
     backup:    renderBackup,
+    onedrive:  renderOnedrive,
     done:      renderDone,
-  };
-  const fn = renders[step];
-  if (fn) fn();
+  }[step] || (() => {}))();
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+function badge(id, state, label) {
+  const el = document.getElementById(id);
+  if (el) { el.className = `toggle-status status-${state}`; el.textContent = label; }
+}
+
+function checklistToggle(el) {
+  const box = el.querySelector('.check-box');
+  box.classList.toggle('checked');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STEP 1 — Welcome
 // ═══════════════════════════════════════════════════════════════════════════════
 async function renderWelcome() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
         <div class="step-icon">🏠</div>
-        <div>
-          <div class="step-title">Welcome to Connect Nest</div>
-          <div class="step-subtitle">This wizard will configure your smart home in minutes</div>
-        </div>
+        <div><div class="step-title">Welcome to Connect Nest</div>
+        <div class="step-subtitle">Let's get your smart home set up from scratch</div></div>
       </div>
-      <div id="ha-status-box" class="alert alert-info">Checking Home Assistant status…</div>
-      <p style="color:var(--text-sec);font-size:0.9rem;line-height:1.6;margin-bottom:1.5rem">
-        We'll walk you through installing and configuring:<br>
-        <strong style="color:var(--text)">Studio Code · HACS · MQTT · Zigbee2MQTT · Tailscale · Backups</strong>
+      <div id="ha-box" class="alert alert-info">Checking Home Assistant connection…</div>
+      <p style="color:var(--text-sec);font-size:0.9rem;line-height:1.65;margin:1.25rem 0">
+        This wizard automates the full setup process — from installing add-ons to configuring
+        your Zigbee coordinator and backups. The next page will explain exactly what you need
+        to have ready before we begin.
       </p>
-      <div class="alert alert-warn">
-        ℹ️ Have your <strong>Zigbee coordinator IP</strong> and <strong>Tailscale auth key</strong> handy — you'll need them later.
-        Everything else is automatic.
-      </div>
       <div class="btn-actions">
-        <button class="btn btn-primary" id="start-btn" disabled onclick="next()">Get Started →</button>
+        <button class="btn btn-primary" id="start-btn" disabled onclick="next()">Continue →</button>
       </div>
     </div>`;
 
   try {
-    const status = await get('/status');
-    const box = document.getElementById('ha-status-box');
-    if (status.ha_online) {
+    const s = await get('/status');
+    const box = document.getElementById('ha-box');
+    if (s.ha_online) {
       box.className = 'alert alert-success';
-      box.textContent = `✓ Home Assistant ${status.ha_version} detected and running`;
+      box.textContent = `✓ Home Assistant ${s.ha_version} is running`;
     } else {
       box.className = 'alert alert-error';
       box.textContent = '✗ Cannot reach Home Assistant — make sure it is running';
     }
-    document.getElementById('start-btn').disabled = false;
+    document.getElementById('start-btn').disabled = !s.ha_online;
   } catch(e) {
-    document.getElementById('ha-status-box').className = 'alert alert-error';
-    document.getElementById('ha-status-box').textContent = 'Error communicating with HA: ' + e.message;
+    document.getElementById('ha-box').className = 'alert alert-error';
+    document.getElementById('ha-box').textContent = 'Connection error: ' + e.message;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 2 — Core add-ons (Studio Code + HACS)
+// STEP 2 — Before you begin (pre-flight)
 // ═══════════════════════════════════════════════════════════════════════════════
-function renderAddons() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+function renderPreflight() {
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
-        <div class="step-icon">🧩</div>
-        <div>
-          <div class="step-title">Core Add-ons</div>
-          <div class="step-subtitle">Installing Studio Code Server and HACS</div>
+        <div class="step-icon">📋</div>
+        <div><div class="step-title">Before you begin</div>
+        <div class="step-subtitle">Read this page — it takes 60 seconds and saves headaches later</div></div>
+      </div>
+
+      <div class="preflight-grid">
+        <!-- Left: what gets installed -->
+        <div class="preflight-col">
+          <h3>What this wizard installs</h3>
+          <div class="preflight-item">
+            <div class="pi-icon">💻</div>
+            <div class="pi-text"><strong>Studio Code Server</strong><br>Edit config files in your browser</div>
+          </div>
+          <div class="preflight-item">
+            <div class="pi-icon">🧩</div>
+            <div class="pi-text"><strong>HACS</strong><span class="opt-tag">optional</span><br>Community integrations store</div>
+          </div>
+          <div class="preflight-item">
+            <div class="pi-icon">📡</div>
+            <div class="pi-text"><strong>Mosquitto MQTT</strong><br>Message broker for Zigbee devices</div>
+          </div>
+          <div class="preflight-item">
+            <div class="pi-icon">🔌</div>
+            <div class="pi-text"><strong>Zigbee2MQTT</strong><br>Connects your SLZB-06 coordinator</div>
+          </div>
+          <div class="preflight-item">
+            <div class="pi-icon">🔒</div>
+            <div class="pi-text"><strong>Tailscale VPN</strong><span class="opt-tag">optional</span><br>Remote access without port forwarding</div>
+          </div>
+          <div class="preflight-item">
+            <div class="pi-icon">💾</div>
+            <div class="pi-text"><strong>Backup Schedule</strong><br>Automatic local HA backups</div>
+          </div>
+          <div class="preflight-item">
+            <div class="pi-icon">☁️</div>
+            <div class="pi-text"><strong>OneDrive Backup</strong><span class="opt-tag">optional</span><br>Cloud backup to Microsoft OneDrive</div>
+          </div>
+        </div>
+
+        <!-- Right: what you need to have ready -->
+        <div class="preflight-col">
+          <h3>What you'll need</h3>
+          <div class="checklist-item" onclick="checklistToggle(this)">
+            <div class="check-box"></div>
+            <div class="ci-text">
+              <strong>Zigbee coordinator IP</strong>
+              <div class="ci-hint">Your SLZB-06's local IP — check your router's device list (DHCP table)</div>
+            </div>
+          </div>
+          <div class="checklist-item" onclick="checklistToggle(this)">
+            <div class="check-box"></div>
+            <div class="ci-text">
+              <strong>MQTT credentials</strong>
+              <div class="ci-hint">You're creating these — decide on a username and password now and write them down</div>
+            </div>
+          </div>
+          <div class="checklist-item" onclick="checklistToggle(this)">
+            <div class="check-box"></div>
+            <div class="ci-text">
+              <strong>Tailscale auth key</strong> <span style="font-size:0.72rem;color:var(--warn)">optional</span>
+              <div class="ci-hint">Get a reusable key at <a href="https://login.tailscale.com/admin/settings/keys" target="_blank">tailscale.com → Settings → Keys</a></div>
+            </div>
+          </div>
+          <div class="checklist-item" onclick="checklistToggle(this)">
+            <div class="check-box"></div>
+            <div class="ci-text">
+              <strong>15–20 minutes</strong>
+              <div class="ci-hint">Keep this page open — HA will restart once during the process</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div id="addons-msg" class="alert alert-info hidden"></div>
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-name">Studio Code Server</div>
-          <div class="toggle-desc">Edit HA config files in your browser — essential for advanced setup</div>
-        </div>
-        <span class="toggle-status status-pending" id="badge-vscode">Pending</span>
+
+      <div class="alert alert-warn">
+        <strong>After the wizard, you'll still need to do these manually:</strong>
+        <ul class="after-steps" style="margin-top:0.5rem">
+          <li>Complete HACS GitHub authorisation in HA → Settings → Integrations</li>
+          <li>Click the Tailscale authentication URL shown in the Tailscale add-on log</li>
+          <li>Accept the MQTT integration notification that appears in HA</li>
+          <li>For OneDrive: install via HACS and sign in with your Microsoft account</li>
+        </ul>
       </div>
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-name">HACS</div>
-          <div class="toggle-desc">Home Assistant Community Store — custom integrations and cards</div>
-        </div>
-        <span class="toggle-status status-pending" id="badge-hacs">Pending</span>
-      </div>
-      <div class="alert alert-warn" style="margin-top:1.25rem">
-        ⚠️ HACS requires a <strong>HA restart</strong> to activate — the wizard will handle this automatically after this step.
-      </div>
-      <div class="btn-actions">
-        <button class="btn btn-primary" id="install-addons-btn" onclick="doInstallAddons()">Install Both →</button>
+
+      <div class="btn-actions" style="margin-top:1.5rem">
+        <button class="btn btn-primary" onclick="next()">I'm ready — let's go →</button>
       </div>
     </div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 3 — Add-ons (Studio Code mandatory, HACS optional)
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderAddons() {
+  collected.install_hacs = collected.install_hacs !== false; // default true
+  document.getElementById('step-container').innerHTML = `
+    <div class="step-content">
+      <div class="step-header">
+        <div class="step-icon">🧩</div>
+        <div><div class="step-title">Core Add-ons</div>
+        <div class="step-subtitle">Installing Studio Code Server and optionally HACS</div></div>
+      </div>
+      <div id="addons-msg" style="display:none"></div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">Studio Code Server</div>
+          <div class="toggle-desc">Edit configuration files in your browser — highly recommended for all users</div>
+        </div>
+        <span class="toggle-status status-pending" id="badge-vscode">Installing</span>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">
+            HACS
+            <span class="step-badge badge-optional">Optional</span>
+          </div>
+          <div class="toggle-desc">Home Assistant Community Store — enables community integrations and cards</div>
+        </div>
+        <label class="cn-checkbox" id="hacs-toggle">
+          <input type="checkbox" id="hacs-check" ${collected.install_hacs ? 'checked' : ''}>
+          <div class="box"></div>
+        </label>
+      </div>
+
+      <div class="alert alert-info" id="hacs-note" style="margin-top:1rem;${collected.install_hacs ? '' : 'display:none'}">
+        ℹ️ HACS requires a <strong>HA restart</strong> to activate — the wizard handles this automatically.
+      </div>
+
+      <div class="btn-actions">
+        <button class="btn btn-primary" id="install-btn" onclick="doInstallAddons()">Install →</button>
+      </div>
+    </div>`;
+
+  document.getElementById('hacs-check').addEventListener('change', function() {
+    collected.install_hacs = this.checked;
+    document.getElementById('hacs-note').style.display = this.checked ? '' : 'none';
+  });
+}
+
 async function doInstallAddons() {
-  const btn = document.getElementById('install-addons-btn');
+  const btn = document.getElementById('install-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Installing…';
 
@@ -468,55 +459,55 @@ async function doInstallAddons() {
   badge('badge-vscode', 'loading', 'Installing…');
   try {
     const r = await post('/step/studio-code', {});
-    badge('badge-vscode', r.ok ? 'done' : 'error', r.ok ? 'Done' : 'Error');
+    badge('badge-vscode', r.ok ? 'done' : 'error', r.ok ? 'Done ✓' : 'Error');
   } catch(e) {
     badge('badge-vscode', 'error', 'Failed');
   }
 
-  // HACS
-  badge('badge-hacs', 'loading', 'Downloading…');
-  try {
-    const r = await post('/step/hacs', {});
-    badge('badge-hacs', r.ok ? 'done' : 'error', r.ok ? 'Done' : 'Error');
-    if (r.ok) {
-      setTimeout(next, 1000);  // Always go to restart step (may or may not be needed)
-    } else {
-      const msg = document.getElementById('addons-msg');
-      msg.className = 'alert alert-error';
-      msg.textContent = r.error || 'HACS install failed — check internet connectivity';
-      msg.classList.remove('hidden');
-      btn.disabled = false;
-      btn.textContent = 'Retry';
+  // HACS (only if opted in)
+  if (collected.install_hacs) {
+    const hacsRow = document.querySelector('#hacs-toggle');
+    if (hacsRow) hacsRow.outerHTML = '<span class="toggle-status status-loading" id="badge-hacs">Downloading…</span>';
+    else {
+      const el = document.createElement('span');
+      el.className = 'toggle-status status-loading'; el.id = 'badge-hacs'; el.textContent = 'Downloading…';
+      document.querySelector('.toggle-row:last-of-type').appendChild(el);
     }
-  } catch(e) {
-    badge('badge-hacs', 'error', 'Failed');
-    btn.disabled = false;
-    btn.textContent = 'Retry';
+    try {
+      const r = await post('/step/hacs', {});
+      badge('badge-hacs', r.ok ? 'done' : 'error', r.ok ? 'Done ✓' : 'Error');
+    } catch(e) {
+      badge('badge-hacs', 'error', 'Failed');
+    }
   }
+
+  btn.textContent = 'Continue →';
+  btn.disabled = false;
+  btn.onclick = next;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 3 — Restart HA (required for HACS to load)
+// STEP 4 — Restart HA (conditional — only if HACS was selected)
 // ═══════════════════════════════════════════════════════════════════════════════
 function renderRestart() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  // Guard: should have been skipped in navigation if HACS not opted in
+  if (!collected.install_hacs) { next(); return; }
+
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
         <div class="step-icon">🔄</div>
-        <div>
-          <div class="step-title">Restart Home Assistant</div>
-          <div class="step-subtitle">Required to activate HACS and any new integrations</div>
-        </div>
+        <div><div class="step-title">Restart Home Assistant</div>
+        <div class="step-subtitle">Required for HACS to activate — wizard waits automatically</div></div>
       </div>
-      <p style="color:var(--text-sec);font-size:0.9rem;line-height:1.6;margin-bottom:1.5rem">
-        HACS needs HA to restart before it becomes available. The wizard will automatically
-        wait for HA to come back online (usually takes 30–60 seconds) and then continue.
+      <p style="color:var(--text-sec);font-size:0.9rem;line-height:1.65;margin-bottom:1.5rem">
+        This page will automatically continue once HA is back online (usually 30–60 seconds).
+        Do not close this tab.
       </p>
       <div id="restart-area">
         <div class="btn-actions">
           <button class="btn btn-primary" onclick="doRestart()">Restart HA Now →</button>
-          <button class="btn btn-skip" onclick="next()">Skip (already restarted)</button>
+          <button class="btn btn-secondary" onclick="next()">Skip (already restarted)</button>
         </div>
       </div>
     </div>`;
@@ -527,57 +518,57 @@ async function doRestart() {
     <div class="restart-anim">
       <div class="big-spinner"></div>
       <p>Restarting Home Assistant…</p>
-      <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">This page will continue automatically when HA is back</p>
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">Waiting for HA to come back online</p>
     </div>`;
-
   try {
     const r = await post('/step/restart', {});
     if (r.ok) {
-      document.getElementById('restart-area').innerHTML =
-        '<div class="alert alert-success">✓ Home Assistant is back online</div>';
-      setTimeout(next, 1500);
+      document.getElementById('restart-area').innerHTML = '<div class="alert alert-success">✓ Home Assistant is back online</div>';
+      setTimeout(next, 1200);
     } else {
-      document.getElementById('restart-area').innerHTML =
-        `<div class="alert alert-warn">⚠️ ${r.message} — you may continue manually once HA is back</div>
-         <div class="btn-actions"><button class="btn btn-primary" onclick="next()">Continue →</button></div>`;
+      document.getElementById('restart-area').innerHTML = `
+        <div class="alert alert-warn">⚠️ ${r.message}</div>
+        <div class="btn-actions"><button class="btn btn-primary" onclick="next()">Continue anyway →</button></div>`;
     }
   } catch(e) {
-    document.getElementById('restart-area').innerHTML =
-      `<div class="alert alert-error">Error: ${e.message}</div>
-       <div class="btn-actions"><button class="btn btn-primary" onclick="renderRestart()">Try Again</button></div>`;
+    document.getElementById('restart-area').innerHTML = `
+      <div class="alert alert-error">Error: ${e.message}</div>
+      <div class="btn-actions">
+        <button class="btn btn-primary" onclick="doRestart()">Retry</button>
+        <button class="btn btn-secondary" onclick="next()">Skip</button>
+      </div>`;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 4 — MQTT Broker
+// STEP 5 — MQTT Broker (mandatory)
 // ═══════════════════════════════════════════════════════════════════════════════
 function renderMqtt() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
         <div class="step-icon">📡</div>
         <div>
-          <div class="step-title">MQTT Broker</div>
-          <div class="step-subtitle">Mosquitto — required for Zigbee2MQTT and other integrations</div>
+          <div class="step-title">MQTT Broker <span class="step-badge badge-mandatory">Required</span></div>
+          <div class="step-subtitle">Mosquitto — message bus for Zigbee devices and other integrations</div>
         </div>
       </div>
-      <div id="mqtt-msg" class="alert alert-info hidden"></div>
+      <div id="mqtt-msg" style="display:none"></div>
       <div class="field">
         <label>MQTT Username</label>
-        <input type="text" id="mqtt-user" value="cn_mqtt" autocomplete="off">
-        <p class="hint">Used by Zigbee2MQTT and other services to connect to the broker</p>
+        <input type="text" id="mqtt-user" value="${collected.mqtt_username || 'cn_mqtt'}" autocomplete="off">
+        <p class="hint">Used by Zigbee2MQTT and other services — you set this</p>
       </div>
       <div class="field">
         <label>MQTT Password</label>
-        <input type="password" id="mqtt-pass" placeholder="Choose a strong password" autocomplete="new-password">
+        <input type="password" id="mqtt-pass" value="${collected.mqtt_password || ''}" placeholder="Choose a strong password" autocomplete="new-password">
+        <p class="hint">Write this down — you'll need it for the Zigbee step too</p>
       </div>
       <div class="alert alert-info">
-        ℹ️ After installation, HA will show a notification to set up the MQTT integration — accept it to link Zigbee2MQTT and other devices.
+        ℹ️ After install, HA will show a notification to set up the MQTT integration — accept it to connect your devices.
       </div>
       <div class="btn-actions">
         <button class="btn btn-primary" id="mqtt-btn" onclick="doMqtt()">Install & Configure →</button>
-        <button class="btn btn-skip" onclick="skipMqtt()">Skip</button>
       </div>
     </div>`;
 }
@@ -587,84 +578,67 @@ async function doMqtt() {
   const pass = document.getElementById('mqtt-pass').value;
   const msg = document.getElementById('mqtt-msg');
   const btn = document.getElementById('mqtt-btn');
-
-  if (!pass) {
-    msg.className = 'alert alert-error'; msg.textContent = 'Please enter an MQTT password'; msg.classList.remove('hidden'); return;
-  }
-  collected.mqtt_username = user;
-  collected.mqtt_password = pass;
-
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Installing Mosquitto…';
-  msg.classList.add('hidden');
-
+  if (!pass) { showMsg(msg, 'error', 'Please enter an MQTT password'); return; }
+  collected.mqtt_username = user; collected.mqtt_password = pass;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Installing…';
   try {
     const r = await post('/step/mqtt', { username: user, password: pass });
     if (r.ok) {
-      msg.className = 'alert alert-success'; msg.textContent = '✓ ' + r.message; msg.classList.remove('hidden');
-      if (r.note) {
-        const n = document.createElement('div'); n.className = 'alert alert-info'; n.style.marginTop = '0.75rem';
-        n.textContent = r.note; msg.after(n);
-      }
-      btn.textContent = 'Done';
-      setTimeout(next, 2000);
+      showMsg(msg, 'success', '✓ ' + r.message);
+      btn.textContent = 'Done'; setTimeout(next, 1500);
     } else {
-      msg.className = 'alert alert-error'; msg.textContent = r.error || 'Installation failed'; msg.classList.remove('hidden');
+      showMsg(msg, 'error', r.error || 'Failed');
       btn.disabled = false; btn.textContent = 'Retry';
     }
   } catch(e) {
-    msg.className = 'alert alert-error'; msg.textContent = e.message; msg.classList.remove('hidden');
-    btn.disabled = false; btn.textContent = 'Retry';
+    showMsg(msg, 'error', e.message); btn.disabled = false; btn.textContent = 'Retry';
   }
 }
-function skipMqtt() { skipped.mqtt = true; next(); }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 5 — Zigbee2MQTT
+// STEP 6 — Zigbee2MQTT (mandatory)
 // ═══════════════════════════════════════════════════════════════════════════════
 function renderZigbee() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
         <div class="step-icon">🔌</div>
         <div>
-          <div class="step-title">Zigbee2MQTT</div>
-          <div class="step-subtitle">Connect your SLZB-06 Zigbee coordinator</div>
+          <div class="step-title">Zigbee2MQTT <span class="step-badge badge-mandatory">Required</span></div>
+          <div class="step-subtitle">Connect your SMlight SLZB-06 Zigbee coordinator over the network</div>
         </div>
       </div>
-      <div id="z2m-msg" class="alert alert-info hidden"></div>
+      <div id="z2m-msg" style="display:none"></div>
       <div class="field">
         <label>Coordinator IP Address</label>
-        <input type="text" id="z2m-ip" placeholder="e.g. 192.168.8.100" autocomplete="off">
-        <p class="hint">The local IP address of your SMlight SLZB-06 device</p>
+        <input type="text" id="z2m-ip" value="${collected.z2m_ip || ''}" placeholder="e.g. 192.168.8.100" autocomplete="off">
+        <p class="hint">The SLZB-06's local IP — find it in your router's DHCP device list</p>
       </div>
       <div class="field-row">
         <div class="field">
           <label>TCP Port</label>
-          <input type="number" id="z2m-port" value="6638" min="1" max="65535">
-          <p class="hint">Default: 6638 (SLZB-06)</p>
+          <input type="number" id="z2m-port" value="${collected.z2m_port || 6638}" min="1" max="65535">
+          <p class="hint">Default: 6638</p>
         </div>
         <div class="field">
           <label>Adapter Type</label>
           <select id="z2m-adapter">
-            <option value="ember" selected>Ember / EZSP (SLZB-06)</option>
-            <option value="zstack">ZStack (CC2652 / SkyConnect)</option>
-            <option value="deconz">deCONZ (ConBee)</option>
+            <option value="ember" ${(collected.z2m_adapter||'ember')==='ember'?'selected':''}>Ember / EZSP (SLZB-06)</option>
+            <option value="zstack" ${(collected.z2m_adapter||'')==='zstack'?'selected':''}>ZStack (CC2652)</option>
+            <option value="deconz" ${(collected.z2m_adapter||'')==='deconz'?'selected':''}>deCONZ (ConBee)</option>
           </select>
         </div>
       </div>
-      ${skipped.mqtt ? '' : `
       <div class="field">
         <label>MQTT Password</label>
-        <input type="password" id="z2m-mqtt-pass" placeholder="Same password you set in MQTT step" value="${collected.mqtt_password || ''}">
-      </div>`}
+        <input type="password" id="z2m-pass" value="${collected.mqtt_password || ''}" placeholder="Same password as MQTT step">
+        <p class="hint">Must match the password you set in the MQTT step</p>
+      </div>
       <div class="alert alert-info">
-        ℹ️ Zigbee2MQTT requires Mosquitto to be running first — the wizard has already handled this ordering.
-        Start order: <strong>Mosquitto → Zigbee2MQTT → HA</strong>
+        ℹ️ Start order is enforced: Mosquitto runs first, then Zigbee2MQTT connects to it.
       </div>
       <div class="btn-actions">
         <button class="btn btn-primary" id="z2m-btn" onclick="doZigbee()">Install & Configure →</button>
-        <button class="btn btn-skip" onclick="skip('zigbee')">Skip</button>
       </div>
     </div>`;
 }
@@ -673,60 +647,54 @@ async function doZigbee() {
   const ip = document.getElementById('z2m-ip').value.trim();
   const port = parseInt(document.getElementById('z2m-port').value);
   const adapter = document.getElementById('z2m-adapter').value;
-  const passEl = document.getElementById('z2m-mqtt-pass');
-  const pass = passEl ? passEl.value : (collected.mqtt_password || '');
+  const pass = document.getElementById('z2m-pass').value;
   const msg = document.getElementById('z2m-msg');
   const btn = document.getElementById('z2m-btn');
-
-  if (!ip) { msg.className = 'alert alert-error'; msg.textContent = 'Coordinator IP is required'; msg.classList.remove('hidden'); return; }
-
+  if (!ip) { showMsg(msg, 'error', 'Coordinator IP is required'); return; }
+  if (!pass) { showMsg(msg, 'error', 'MQTT password is required'); return; }
+  collected.z2m_ip = ip; collected.z2m_port = port; collected.z2m_adapter = adapter;
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Installing Zigbee2MQTT…';
-  msg.classList.add('hidden');
-
   try {
     const r = await post('/step/zigbee', {
-      coordinator_ip: ip,
-      coordinator_port: port,
-      mqtt_username: collected.mqtt_username || 'cn_mqtt',
-      mqtt_password: pass,
+      coordinator_ip: ip, coordinator_port: port,
+      mqtt_username: collected.mqtt_username || 'cn_mqtt', mqtt_password: pass,
     });
     if (r.ok) {
-      msg.className = 'alert alert-success'; msg.textContent = '✓ ' + r.message; msg.classList.remove('hidden');
-      btn.textContent = 'Done';
-      setTimeout(next, 2000);
+      showMsg(msg, 'success', '✓ ' + r.message); btn.textContent = 'Done'; setTimeout(next, 1500);
     } else {
-      msg.className = 'alert alert-error'; msg.textContent = r.error || 'Failed'; msg.classList.remove('hidden');
-      btn.disabled = false; btn.textContent = 'Retry';
+      showMsg(msg, 'error', r.error || 'Failed'); btn.disabled = false; btn.textContent = 'Retry';
     }
   } catch(e) {
-    msg.className = 'alert alert-error'; msg.textContent = e.message; msg.classList.remove('hidden');
-    btn.disabled = false; btn.textContent = 'Retry';
+    showMsg(msg, 'error', e.message); btn.disabled = false; btn.textContent = 'Retry';
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 6 — Tailscale
+// STEP 7 — Tailscale (optional)
 // ═══════════════════════════════════════════════════════════════════════════════
 function renderTailscale() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
         <div class="step-icon">🔒</div>
         <div>
-          <div class="step-title">Tailscale VPN</div>
-          <div class="step-subtitle">Remote access to your home without port forwarding</div>
+          <div class="step-title">Tailscale VPN <span class="step-badge badge-optional">Optional</span></div>
+          <div class="step-subtitle">Secure remote access to your home — no port forwarding needed</div>
         </div>
       </div>
-      <div id="ts-msg" class="alert alert-info hidden"></div>
-      <div class="alert alert-info" style="margin-bottom:1.25rem">
-        ℹ️ The Tailscale add-on will install and start. After installation, open the add-on log in HA
-        and click the authentication URL to link your Tailscale account.
-        Get a reusable auth key at <a href="https://login.tailscale.com/admin/settings/keys" target="_blank">tailscale.com → Settings → Keys</a>.
+      <div id="ts-msg" style="display:none"></div>
+      <p style="color:var(--text-sec);font-size:0.9rem;line-height:1.65;margin-bottom:1.25rem">
+        Tailscale lets you access your Home Assistant from anywhere using a private, encrypted
+        tunnel. After installation you'll click an authentication link in the add-on log to
+        link your Tailscale account.
+      </p>
+      <div class="alert alert-info">
+        Get a reusable auth key at <a href="https://login.tailscale.com/admin/settings/keys" target="_blank">tailscale.com → Settings → Keys</a>
+        before proceeding. One-time keys expire immediately after use.
       </div>
-      <div class="btn-actions">
-        <button class="btn btn-primary" id="ts-btn" onclick="doTailscale()">Install Tailscale →</button>
-        <button class="btn btn-skip" onclick="skip('tailscale')">Skip</button>
+      <div class="btn-actions" style="margin-top:1.25rem">
+        <button class="btn btn-primary" id="ts-btn" onclick="doTailscale()">Install Tailscale</button>
+        <button class="btn btn-secondary" onclick="next()">Skip this step</button>
       </div>
     </div>`;
 }
@@ -735,61 +703,53 @@ async function doTailscale() {
   const msg = document.getElementById('ts-msg');
   const btn = document.getElementById('ts-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Installing…';
-
   try {
     const r = await post('/step/tailscale', {});
     if (r.ok) {
-      msg.className = 'alert alert-success';
-      msg.innerHTML = `✓ ${r.message}${r.action_required ? `<br><br><strong>Next step:</strong> ${r.instructions}` : ''}`;
-      msg.classList.remove('hidden');
-      btn.textContent = 'Continue →';
-      btn.onclick = next;
-      btn.disabled = false;
+      showMsg(msg, 'success', `✓ ${r.message}`);
+      if (r.instructions) {
+        const n = document.createElement('div'); n.className = 'alert alert-warn'; n.style.marginTop = '0.75rem';
+        n.innerHTML = `<strong>Action required:</strong> ${r.instructions}`; msg.after(n);
+      }
+      btn.textContent = 'Continue →'; btn.onclick = next; btn.disabled = false;
     } else {
-      msg.className = 'alert alert-error'; msg.textContent = r.error || 'Failed'; msg.classList.remove('hidden');
-      btn.disabled = false; btn.textContent = 'Retry';
+      showMsg(msg, 'error', r.error || 'Failed'); btn.disabled = false; btn.textContent = 'Retry';
     }
   } catch(e) {
-    msg.className = 'alert alert-error'; msg.textContent = e.message; msg.classList.remove('hidden');
-    btn.disabled = false; btn.textContent = 'Retry';
+    showMsg(msg, 'error', e.message); btn.disabled = false; btn.textContent = 'Retry';
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 7 — Backups
+// STEP 8 — Backup (mandatory)
 // ═══════════════════════════════════════════════════════════════════════════════
 function renderBackup() {
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="step-header">
         <div class="step-icon">💾</div>
         <div>
-          <div class="step-title">Automatic Backups</div>
+          <div class="step-title">Automatic Backups <span class="step-badge badge-mandatory">Required</span></div>
           <div class="step-subtitle">Configure HA's built-in backup schedule</div>
         </div>
       </div>
-      <div id="bk-msg" class="alert alert-info hidden"></div>
+      <div id="bk-msg" style="display:none"></div>
       <div class="field">
-        <label>Backup Schedule</label>
+        <label>Schedule</label>
         <select id="bk-schedule">
           <option value="daily">Daily</option>
           <option value="weekly" selected>Weekly</option>
           <option value="monthly">Monthly</option>
-          <option value="never">Never (manual only)</option>
         </select>
       </div>
       <div class="field">
-        <label>Copies to Keep</label>
+        <label>Copies to keep</label>
         <input type="number" id="bk-copies" value="3" min="1" max="30">
-        <p class="hint">Older backups are automatically deleted</p>
-      </div>
-      <div class="alert alert-info">
-        ℹ️ For OneDrive or Google Drive backups, install the <strong>Backup to OneDrive</strong> add-on from HACS after setup completes — it requires a Microsoft OAuth login that must be done manually.
+        <p class="hint">Older backups are automatically removed</p>
       </div>
       <div class="btn-actions">
         <button class="btn btn-primary" id="bk-btn" onclick="doBackup()">Configure →</button>
-        <button class="btn btn-skip" onclick="skip('backup')">Skip</button>
+        <button class="btn btn-secondary" onclick="next()">Configure later</button>
       </div>
     </div>`;
 }
@@ -799,54 +759,107 @@ async function doBackup() {
   const copies = parseInt(document.getElementById('bk-copies').value);
   const msg = document.getElementById('bk-msg');
   const btn = document.getElementById('bk-btn');
-
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Configuring…';
-
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
   try {
     const r = await post('/step/backup', { schedule, copies });
     if (r.ok) {
-      msg.className = 'alert alert-success'; msg.textContent = '✓ ' + r.message; msg.classList.remove('hidden');
-      btn.textContent = 'Done';
-      setTimeout(next, 1500);
+      showMsg(msg, 'success', '✓ ' + r.message); btn.textContent = 'Done'; setTimeout(next, 1200);
     } else {
-      msg.className = 'alert alert-error'; msg.textContent = r.error || 'Failed'; msg.classList.remove('hidden');
-      btn.disabled = false; btn.textContent = 'Retry';
+      showMsg(msg, 'error', r.error || 'Failed'); btn.disabled = false; btn.textContent = 'Retry';
     }
   } catch(e) {
-    msg.className = 'alert alert-error'; msg.textContent = e.message; msg.classList.remove('hidden');
-    btn.disabled = false; btn.textContent = 'Retry';
+    showMsg(msg, 'error', e.message); btn.disabled = false; btn.textContent = 'Retry';
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 8 — Done
+// STEP 9 — OneDrive Backup (optional)
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderOnedrive() {
+  const hacsInstalled = collected.install_hacs !== false;
+  document.getElementById('step-container').innerHTML = `
+    <div class="step-content">
+      <div class="step-header">
+        <div class="step-icon">☁️</div>
+        <div>
+          <div class="step-title">OneDrive Backup <span class="step-badge badge-optional">Optional</span></div>
+          <div class="step-subtitle">Automatically sync HA backups to Microsoft OneDrive</div>
+        </div>
+      </div>
+      <div id="od-msg" style="display:none"></div>
+      <p style="color:var(--text-sec);font-size:0.9rem;line-height:1.65;margin-bottom:1.25rem">
+        The OneDrive Backup integration stores your HA backups in the cloud automatically.
+        It's installed via HACS and requires signing in to your Microsoft account.
+      </p>
+      ${!hacsInstalled ? `
+      <div class="alert alert-warn" style="margin-bottom:1.25rem">
+        ⚠️ HACS was not installed in this wizard run. OneDrive Backup requires HACS.
+        You can install HACS later and then add OneDrive Backup from the HACS integrations store.
+      </div>` : `
+      <div class="alert alert-info" style="margin-bottom:1.25rem">
+        ℹ️ This step cannot be fully automated — OneDrive Backup requires a Microsoft sign-in.
+        The wizard will mark this as a follow-up task.
+      </div>
+      <div class="alert alert-warn">
+        <strong>After setup, install manually:</strong>
+        <ul class="after-steps" style="margin-top:0.5rem">
+          <li>Open HACS → Integrations → Search "OneDrive Backup"</li>
+          <li>Install → Restart HA</li>
+          <li>Settings → Integrations → OneDrive Backup → Configure → Sign in to Microsoft</li>
+        </ul>
+      </div>`}
+      <div class="btn-actions" style="margin-top:1.25rem">
+        ${hacsInstalled ? `<button class="btn btn-primary" id="od-btn" onclick="doOnedrive()">Mark as follow-up</button>` : ''}
+        <button class="btn btn-secondary" onclick="next()">Skip this step</button>
+      </div>
+    </div>`;
+}
+
+async function doOnedrive() {
+  const msg = document.getElementById('od-msg');
+  const btn = document.getElementById('od-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const r = await post('/step/onedrive', {});
+    showMsg(msg, 'success', '✓ OneDrive Backup marked as a follow-up task');
+    btn.textContent = 'Done'; setTimeout(next, 1200);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Mark as follow-up'; next();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 10 — Done
 // ═══════════════════════════════════════════════════════════════════════════════
 async function renderDone() {
-  await post('/step/complete', {});
+  await post('/step/complete', {}).catch(() => {});
+  let state = {};
+  try { const r = await get('/status'); state = r.wizard_state || {}; } catch(e) {}
 
-  const steps = [
-    { key: 'studio_code',  label: 'Studio Code Server' },
-    { key: 'hacs_files',   label: 'HACS' },
-    { key: 'mqtt',         label: 'Mosquitto MQTT Broker' },
-    { key: 'zigbee',       label: 'Zigbee2MQTT' },
-    { key: 'tailscale',    label: 'Tailscale VPN' },
-    { key: 'backup',       label: 'Automatic Backups' },
-  ];
-
-  let status = {};
-  try { const r = await get('/status'); status = r.wizard_state || {}; } catch(e) {}
-
-  const items = steps.map(s => {
-    const done = status[s.key];
-    const sk = skipped[s.key.replace('_files','').replace('_code','').replace('studio_code','studio-code')];
-    const icon = done ? '✓' : (sk ? '—' : '—');
-    const cls = done ? 'tick' : 'skip';
-    const note = done ? 'Installed' : (sk ? 'Skipped' : 'Skipped');
-    return `<li><span class="${cls}">${icon}</span> <span>${s.label}</span> <span style="margin-left:auto;color:var(--text-dim);font-size:0.8rem">${note}</span></li>`;
+  const items = [
+    { key: 'studio_code', label: 'Studio Code Server', optional: false },
+    { key: 'hacs_files',  label: 'HACS',               optional: true  },
+    { key: 'mqtt',        label: 'Mosquitto MQTT',      optional: false },
+    { key: 'zigbee',      label: 'Zigbee2MQTT',         optional: false },
+    { key: 'tailscale',   label: 'Tailscale VPN',       optional: true  },
+    { key: 'backup',      label: 'Backup Schedule',     optional: false },
+    { key: 'onedrive',    label: 'OneDrive Backup',     optional: true  },
+  ].map(({ key, label, optional }) => {
+    const done = !!state[key];
+    const icon = done ? '✓' : (optional ? '—' : '⚠');
+    const cls  = done ? 's-done' : (optional ? 's-skip' : 'status-warning');
+    const note = done ? 'Installed' : (optional ? 'Skipped' : 'Skipped — configure manually');
+    return `<li><span class="${cls}">${icon}</span><span class="s-label">${label}</span><span class="s-note">${note}</span></li>`;
   }).join('');
 
-  const sc = document.getElementById('step-container');
-  sc.innerHTML = `
+  // Build manual follow-up list
+  const followUps = [];
+  if (state.hacs_files)  followUps.push('HACS: complete GitHub authorisation in HA → Settings → Integrations → HACS');
+  if (state.tailscale)   followUps.push('Tailscale: open the add-on log and click the authentication URL');
+  if (state.mqtt)        followUps.push('MQTT: accept the integration notification that appeared in HA');
+  if (state.onedrive)    followUps.push('OneDrive: install via HACS → Integrations → "OneDrive Backup" → sign in');
+
+  document.getElementById('step-container').innerHTML = `
     <div class="step-content">
       <div class="done-hero">
         <div class="check">🎉</div>
@@ -854,12 +867,15 @@ async function renderDone() {
         <p>Your Connect Nest smart home is ready</p>
       </div>
       <ul class="summary-list">${items}</ul>
-      <div class="alert alert-warn" style="margin-top:1.5rem">
-        <strong>Next steps:</strong><br>
-        1. In HA → Settings → Profile → select <strong>cn_dark</strong> theme<br>
-        2. Accept the MQTT integration notification if it appeared<br>
-        3. For HACS: go to Settings → Integrations → HACS → follow the GitHub auth flow<br>
-        4. For Tailscale: check the add-on log and click the auth URL
+      ${followUps.length ? `
+      <div class="alert alert-warn" style="margin-top:1.25rem">
+        <strong>Complete these manually:</strong>
+        <ul class="after-steps" style="margin-top:0.5rem">
+          ${followUps.map(f => `<li>${f}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+      <div class="alert alert-info" style="margin-top:1rem">
+        ℹ️ To apply the CN dark theme: HA → Profile → Theme → select <strong>cn_dark</strong> → Save
       </div>
       <div class="btn-actions" style="margin-top:1.5rem">
         <a href="/" class="btn btn-primary">Open Connect Nest →</a>
@@ -868,9 +884,17 @@ async function renderDone() {
   updateProgress();
 }
 
+// ─── Utility ──────────────────────────────────────────────────────────────────
+function showMsg(el, type, text) {
+  el.className = `alert alert-${type}`;
+  el.textContent = text;
+  el.style.display = '';
+  el.style.marginBottom = '1rem';
+}
+
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 updateProgress();
-render(STEPS[currentStep]);
+render(STEPS[0]);
 </script>
 </body>
 </html>

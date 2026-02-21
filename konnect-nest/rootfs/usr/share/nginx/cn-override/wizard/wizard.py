@@ -98,7 +98,7 @@ def install_hacs_files():
         'https://api.github.com/repos/hacs/integration/releases/latest',
         headers={'User-Agent': 'ConnectNest-Wizard/1.0'}
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=60) as resp:
         data = json.loads(resp.read())
     version = data['tag_name']
 
@@ -386,6 +386,26 @@ class WizardHandler(BaseHTTPRequestHandler):
             self.send_json(200, {
                 'ok': True,
                 'message': f'Backup configured: {schedule}, keep {copies} copies',
+            })
+
+        # ── Step: OneDrive Backup (optional, informational) ──
+        elif path == '/onboarding/api/step/onedrive':
+            hacs_path = Path('/config/custom_components/hacs')
+            if not hacs_path.exists():
+                self.send_json(200, {
+                    'ok': False,
+                    'skippable': True,
+                    'message': 'HACS is not installed — OneDrive Backup requires HACS. Install HACS first, then add OneDrive Backup from the HACS integrations store.',
+                })
+                return
+            # Cannot automate: HACS integration install + Microsoft OAuth must be done in HA UI
+            state['onedrive'] = 'follow_up'
+            save_state(state)
+            self.send_json(200, {
+                'ok': True,
+                'manual_required': True,
+                'message': 'OneDrive Backup recorded as a follow-up task',
+                'instructions': 'HACS → Integrations → search "OneDrive Backup" → install → restart HA → Settings → Integrations → OneDrive Backup → Configure → sign in with Microsoft.',
             })
 
         # ── Step: complete ──

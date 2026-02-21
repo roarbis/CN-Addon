@@ -23,7 +23,7 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Connect Nest v2025.3.0"
+info "  Connect Nest v2025.3.1"
 info "  Your smart home, beautifully connected."
 info "============================================"
 info "HA backend port: ${HA_PORT}"
