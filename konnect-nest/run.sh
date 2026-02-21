@@ -32,9 +32,9 @@ info "SSL enabled: ${SSL}"
 # ─── Version check via Supervisor API ──────────────────────
 # Check HA version for compatibility logging
 HA_VERSION=$(curl -s \
-    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+    -H "Authorization: Bearer ${SUPERVISOR_TOKEN:-}" \
     http://supervisor/core/info 2>/dev/null \
-    | jq -r '.data.version // "unknown"') || HA_VERSION="unknown"
+    | jq -r '.data.version // "unknown"' 2>/dev/null) || HA_VERSION="unknown"
 
 info "HA Core version detected: ${HA_VERSION}"
 
@@ -142,6 +142,8 @@ http {
             proxy_set_header Connection \$connection_upgrade;
             # Required for HA ingress
             proxy_set_header X-Ingress-Path \$http_x_ingress_path;
+            # Disable compression from backend so sub_filter can process content
+            proxy_set_header Accept-Encoding "";
 
             # ── Runtime branding replacement ──────────────
             # Replaces ALL occurrences in proxied HTML/JS responses
@@ -202,6 +204,8 @@ http {
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
             proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection \$connection_upgrade;
+            # Disable compression from backend so sub_filter can process content
+            proxy_set_header Accept-Encoding "";
 
             sub_filter_once off;
             sub_filter 'Home Assistant' 'Connect Nest';
@@ -237,7 +241,7 @@ success "nginx config valid"
 info "Waiting for HA Core to be ready on port ${HA_PORT}..."
 MAX_WAIT=120
 WAITED=0
-until curl -sf "http://127.0.0.1:${HA_PORT}/api/" > /dev/null 2>&1; do
+until curl -s --max-time 3 "http://127.0.0.1:${HA_PORT}/" -o /dev/null 2>&1; do
     if [[ $WAITED -ge $MAX_WAIT ]]; then
         warn "HA Core not ready after ${MAX_WAIT}s — starting anyway"
         break
