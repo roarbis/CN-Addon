@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  Konnect Nest — VMware Ubuntu VM Bootstrap Script
+#  Connect Nest — VMware Ubuntu VM Bootstrap Script
 #  Phase 1: Installs prerequisites + HA Supervised
 #
 #  Run this ONCE on a fresh Ubuntu 22.04 VM after SSH access
@@ -11,7 +11,7 @@
 #    sudo ./bootstrap-vmware.sh
 #
 #  Or run directly from GitHub (after pushing):
-#    curl -sSL https://raw.githubusercontent.com/roarbis/KN-Addon/main/scripts/bootstrap-vmware.sh | sudo bash
+#    curl -sSL https://raw.githubusercontent.com/roarbis/CN-Addon/main/scripts/bootstrap-vmware.sh | sudo bash
 #
 #  What this installs:
 #    - System prerequisites (AppArmor, avahi, NetworkManager, etc.)
@@ -23,7 +23,7 @@
 #    - Static IP (prompted interactively — your choice)
 #    - MQTT Broker (HA add-on — installed via HA UI)
 #    - Zigbee2MQTT (HA add-on — installed via HA UI)
-#    - Konnect Nest (HA add-on — installed via HA UI)
+#    - Connect Nest (HA add-on — installed via HA UI)
 # ============================================================
 
 set -euo pipefail
@@ -34,10 +34,10 @@ set -euo pipefail
 # ── Colours ─────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
-info()    { echo -e "${CYAN}[KN]${NC} $*"; }
-success() { echo -e "${GREEN}[KN] ✓${NC} $*"; }
-warn()    { echo -e "${YELLOW}[KN] ⚠${NC} $*"; }
-error()   { echo -e "${RED}[KN] ✗${NC} $*"; exit 1; }
+info()    { echo -e "${CYAN}[CN]${NC} $*"; }
+success() { echo -e "${GREEN}[CN] ✓${NC} $*"; }
+warn()    { echo -e "${YELLOW}[CN] ⚠${NC} $*"; }
+error()   { echo -e "${RED}[CN] ✗${NC} $*"; exit 1; }
 header()  { echo -e "\n${BOLD}${CYAN}══════════════════════════════════${NC}";
             echo -e "${BOLD}${CYAN}  $*${NC}";
             echo -e "${BOLD}${CYAN}══════════════════════════════════${NC}\n"; }
@@ -52,7 +52,7 @@ HA_VERSION=""
 clear
 echo -e "${BOLD}${CYAN}"
 echo "  ╔═══════════════════════════════════════════╗"
-echo "  ║   Konnect Nest — Bootstrap for VMware     ║"
+echo "  ║   Connect Nest — Bootstrap for VMware     ║"
 echo "  ║   Home Assistant Supervised Installer     ║"
 echo "  ╚═══════════════════════════════════════════╝"
 echo -e "${NC}\n"
@@ -83,21 +83,21 @@ header "Step 2/8 — Hostname Configuration"
 CURRENT_HOST=$(hostname)
 info "Current hostname: ${CURRENT_HOST}"
 
-if [[ "$CURRENT_HOST" != "konnectnest" ]]; then
-    read -rp "Set hostname to 'konnectnest'? [Y/n]: " set_host
+if [[ "$CURRENT_HOST" != "connectnest" ]]; then
+    read -rp "Set hostname to 'connectnest'? [Y/n]: " set_host
     if [[ ! "$set_host" =~ ^[Nn]$ ]]; then
-        hostnamectl set-hostname konnectnest
+        hostnamectl set-hostname connectnest
         # Update /etc/hosts safely
         if grep -q "127.0.1.1" /etc/hosts; then
-            sed -i "s/^127\.0\.1\.1.*/127.0.1.1\tkonnectnest/" /etc/hosts
+            sed -i "s/^127\.0\.1\.1.*/127.0.1.1\tconnectnest/" /etc/hosts
         else
-            echo "127.0.1.1	konnectnest" >> /etc/hosts
+            echo "127.0.1.1	connectnest" >> /etc/hosts
         fi
-        success "Hostname set to: konnectnest"
-        info "mDNS: konnectnest.local (available after services start)"
+        success "Hostname set to: connectnest"
+        info "mDNS: connectnest.local (available after services start)"
     fi
 else
-    success "Hostname already: konnectnest"
+    success "Hostname already: connectnest"
 fi
 
 # ── Step 3: Static IP (Optional — your choice) ───────────────
@@ -139,7 +139,7 @@ if [[ "$set_static" =~ ^[Yy]$ ]]; then
         warn "SSH may briefly disconnect — reconnect to ${STATIC_IP}"
     else
         # Fallback: netplan
-        cat > /etc/netplan/99-konnectnest-static.yaml <<NETPLAN
+        cat > /etc/netplan/99-connectnest-static.yaml <<NETPLAN
 network:
   version: 2
   ethernets:
@@ -152,7 +152,7 @@ network:
       nameservers:
         addresses: [${DNS}]
 NETPLAN
-        chmod 600 /etc/netplan/99-konnectnest-static.yaml
+        chmod 600 /etc/netplan/99-connectnest-static.yaml
         netplan apply 2>/dev/null || true
         success "Static IP configured via netplan: ${STATIC_IP}"
     fi
@@ -320,7 +320,7 @@ echo "  ╚═══════════════════════
 echo -e "${NC}"
 echo -e "${BOLD}  Access:${NC}"
 echo -e "  HA Web UI:  ${CYAN}http://${CURRENT_IP}:8123${NC}"
-echo -e "  HA mDNS:    ${CYAN}http://konnectnest.local:8123${NC}"
+echo -e "  HA mDNS:    ${CYAN}http://connectnest.local:8123${NC}"
 echo -e "  SSH:        ${CYAN}ssh knadmin@${CURRENT_IP}${NC}"
 echo ""
 echo -e "${BOLD}  Next Steps:${NC}"
@@ -328,7 +328,7 @@ echo -e "  1. Open http://${CURRENT_IP}:8123 and complete HA onboarding"
 echo -e "  2. Follow: PART-2-HA-INSTALL.md (HA configuration)"
 echo -e "  3. Follow: PART-3-MQTT.md (Mosquitto MQTT broker)"
 echo -e "  4. Follow: PART-4-ZIGBEE2MQTT.md (Zigbee integration)"
-echo -e "  5. Follow: PART-5-KN-ADDON.md (Konnect Nest branding)"
+echo -e "  5. Follow: PART-5-CN-ADDON.md (Connect Nest branding)"
 echo ""
 echo -e "${YELLOW}  ⚠  HA is still pulling Docker images in background.${NC}"
 echo -e "${YELLOW}     If browser shows blank page, wait 5 min and refresh.${NC}"

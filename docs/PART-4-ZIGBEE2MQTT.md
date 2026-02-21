@@ -362,4 +362,4 @@ Description: MQTT + Zigbee2MQTT running, X devices paired
 | Permit join disabled | ☐ |
 | Snapshot taken | ☐ |
 
-**→ Next: [PART-5-KN-ADDON.md](PART-5-KN-ADDON.md)**
+**→ Next: [PART-5-CN-ADDON.md](PART-5-CN-ADDON.md)**

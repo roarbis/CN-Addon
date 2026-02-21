@@ -1,6 +1,6 @@
 {
-  "name": "Konnect Nest",
-  "short_name": "KonnectNest",
+  "name": "Connect Nest",
+  "short_name": "ConnectNest",
   "description": "Your smart home, beautifully connected.",
   "start_url": "/",
   "display": "standalone",
@@ -9,73 +9,73 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/static/icons/kn-icon-48.png",
+      "src": "/static/icons/cn-icon-48.png",
       "sizes": "48x48",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-72.png",
+      "src": "/static/icons/cn-icon-72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-96.png",
+      "src": "/static/icons/cn-icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-120.png",
+      "src": "/static/icons/cn-icon-120.png",
       "sizes": "120x120",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-128.png",
+      "src": "/static/icons/cn-icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-144.png",
+      "src": "/static/icons/cn-icon-144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-152.png",
+      "src": "/static/icons/cn-icon-152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-180.png",
+      "src": "/static/icons/cn-icon-180.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-192.png",
+      "src": "/static/icons/cn-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/static/icons/kn-icon-256.png",
+      "src": "/static/icons/cn-icon-256.png",
       "sizes": "256x256",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/icons/kn-icon-512.png",
+      "src": "/static/icons/cn-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/static/icons/kn-icon-1024.png",
+      "src": "/static/icons/cn-icon-1024.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"

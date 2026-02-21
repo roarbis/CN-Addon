@@ -80,7 +80,7 @@ They're useless if the VM's disk dies.
 ```bash
 # On your admin machine — copy latest HA backup locally
 scp knadmin@192.168.1.XXX:/config/backups/*.tar \
-    "C:\Backups\KonnectNest\"
+    "C:\Backups\ConnectNest\"
 
 # Or automate with a weekly script
 ```
@@ -108,7 +108,7 @@ Windows boots
           → HA Core starts (~2 minutes)
             → MQTT Broker starts
               → Zigbee2MQTT starts
-                → KN Add-on starts
+                → CN Add-on starts
                   → Friend's iPhone PWA reconnects (~30 seconds)
 ```
 
@@ -154,7 +154,7 @@ Zigbee:
   Dongle port: /dev/serial/by-id/usb-ITead...
   Devices paired: 12
 
-KN Add-on:
+CN Add-on:
   Version: 2025.1.0
   Last updated: 2025-01-XX
 
@@ -257,8 +257,8 @@ Every 3 months:
   [ ] Check HA release notes for the new version
   [ ] Test update on YOUR own HA instance first
   [ ] Update friends' HA one at a time (not all at once)
-  [ ] Update KN Add-on to matching version
-  [ ] Push updated KN Add-on to GitHub
+  [ ] Update CN Add-on to matching version
+  [ ] Push updated CN Add-on to GitHub
   [ ] Verify all devices still working after update
   [ ] Check Zigbee2MQTT has no unsupported device warnings
   [ ] Verify MQTT broker logs (no unusual errors)
@@ -279,7 +279,7 @@ Security:
 If everything breaks:
 
 ### Level 1 — Restart the Add-on
-HA → Settings → Add-ons → Konnect Nest → Restart
+HA → Settings → Add-ons → Connect Nest → Restart
 
 ### Level 2 — Restart HA
 ```bash

@@ -12,7 +12,7 @@ If you haven't already run the bootstrap script:
 
 ```bash
 # Copy script to VM
-scp "C:\Temp\ClaudeCode\HA-KN-Fork\KN-Addon\scripts\bootstrap-vmware.sh" \
+scp "C:\Temp\ClaudeCode\HA-KN-Fork\CN-Addon\scripts\bootstrap-vmware.sh" \
     knadmin@192.168.1.XXX:~/
 
 # SSH into VM and run it
@@ -79,7 +79,7 @@ This unlocks full add-on configuration options.
 ---
 
 ### Disable Auto-Updates
-**Critical** — prevents HA from updating itself and breaking version matching with KN add-on.
+**Critical** — prevents HA from updating itself and breaking version matching with CN add-on.
 
 1. **Settings → System → Updates**
 2. Set **"Automatically update Home Assistant"** → **OFF**
@@ -87,20 +87,20 @@ This unlocks full add-on configuration options.
 4. Click **Save**
 
 > 💡 You control updates quarterly via the update.sh script.
-> Auto-updates would break the KN version matching strategy.
+> Auto-updates would break the CN version matching strategy.
 
 ---
 
 ### Note Your Exact HA Version
 1. **Settings → About** (bottom of Settings menu)
 2. Note the exact version: e.g., `2025.1.4`
-3. Write it down — KN Add-on version must match major.minor
+3. Write it down — CN Add-on version must match major.minor
 
 ---
 
 ### Set the Instance Name
 1. **Settings → System → General**
-2. **Location name:** `Konnect Nest`
+2. **Location name:** `Connect Nest`
    (This appears in some HA internal logs — won't be visible to friends
    but keeps things consistent)
 3. **Unit system:** Metric or Imperial based on friend's location
@@ -220,7 +220,7 @@ PART 2 CHECKLIST
 [ ] Advanced Mode enabled
 [ ] Auto-updates disabled (HA + add-ons)
 [ ] HA version noted: 2025.X.X
-[ ] Instance name set to "Konnect Nest"
+[ ] Instance name set to "Connect Nest"
 [ ] Nabu Casa NOT signed in
 [ ] HA Supervisor shows healthy: true
 [ ] No red errors in HA logs

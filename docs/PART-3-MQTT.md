@@ -114,10 +114,10 @@ HA needs to be told about the MQTT broker. Usually HA auto-discovers it.
 ### From HA Developer Tools
 
 1. **Developer Tools → MQTT** (the MQTT tab)
-2. **Subscribe to topic:** `test/konnectnest`
+2. **Subscribe to topic:** `test/connectnest`
 3. Click **Start Listening**
 4. In another browser tab: **Publish**
-   - Topic: `test/konnectnest`
+   - Topic: `test/connectnest`
    - Payload: `hello`
 5. You should see **"hello"** appear in the listener
 
@@ -139,7 +139,7 @@ mosquitto_sub -h localhost -p 1883 \
 # Publish (in another SSH session)
 mosquitto_pub -h localhost -p 1883 \
     -u mqtt_user -P "YOUR_PASSWORD" \
-    -t "test/hello" -m "Konnect Nest MQTT working"
+    -t "test/hello" -m "Connect Nest MQTT working"
 
 # You should see the message appear in the subscriber window
 ```

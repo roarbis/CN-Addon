@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  Konnect Nest Add-on — Startup Script
+#  Connect Nest Add-on — Startup Script
 #  Reads HA Supervisor options, configures nginx, starts it
 # ============================================================
 
@@ -10,10 +10,10 @@ set -euo pipefail
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
-info()    { echo -e "${CYAN}[Konnect Nest]${NC} $*"; }
-success() { echo -e "${GREEN}[Konnect Nest] ✓${NC} $*"; }
-warn()    { echo -e "${YELLOW}[Konnect Nest] ⚠${NC} $*"; }
-error()   { echo -e "${RED}[Konnect Nest] ✗${NC} $*"; exit 1; }
+info()    { echo -e "${CYAN}[Connect Nest]${NC} $*"; }
+success() { echo -e "${GREEN}[Connect Nest] ✓${NC} $*"; }
+warn()    { echo -e "${YELLOW}[Connect Nest] ⚠${NC} $*"; }
+error()   { echo -e "${RED}[Connect Nest] ✗${NC} $*"; exit 1; }
 
 # ─── Read add-on options from Supervisor ───────────────────
 # HA Supervisor writes options to /data/options.json
@@ -23,7 +23,7 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Konnect Nest v2025.1.0"
+info "  Connect Nest v2025.1.0"
 info "  Your smart home, beautifully connected."
 info "============================================"
 info "HA backend port: ${HA_PORT}"
@@ -43,7 +43,7 @@ if [[ "$HA_VERSION" != "unknown" ]]; then
     YEAR=$(echo "$HA_VERSION" | cut -d. -f1)
     if [[ "$YEAR" -lt 2024 ]]; then
         warn "HA version ${HA_VERSION} is older than 2024."
-        warn "Konnect Nest is tested on 2024.1.0+."
+        warn "Connect Nest is tested on 2024.1.0+."
         warn "Some branding strings may not be fully replaced."
         warn "Consider updating HA for best experience."
     fi
@@ -91,17 +91,17 @@ http {
         listen ${INGRESS_PORT};
         server_name _;
 
-        # KN branded manifest
+        # CN branded manifest
         location = /manifest.json {
-            alias /usr/share/nginx/kn-override/manifest.json;
+            alias /usr/share/nginx/cn-override/manifest.json;
             add_header Cache-Control "no-cache, no-store, must-revalidate";
             add_header Content-Type "application/manifest+json";
         }
 
-        # KN icons
+        # CN icons
         location /static/icons/ {
-            # Serve KN icons first, fall back to HA icons
-            root /usr/share/nginx/kn-override;
+            # Serve CN icons first, fall back to HA icons
+            root /usr/share/nginx/cn-override;
             try_files \$uri @ha_backend;
             expires 30d;
         }
@@ -148,8 +148,8 @@ http {
             # ── Runtime branding replacement ──────────────
             # Replaces ALL occurrences in proxied HTML/JS responses
             # This is the safety net that catches everything
-            subs_filter 'Home Assistant' 'Konnect Nest' gi;
-            subs_filter 'home-assistant' 'konnect-nest' gi;
+            subs_filter 'Home Assistant' 'Connect Nest' gi;
+            subs_filter 'home-assistant' 'connect-nest' gi;
             subs_filter_types text/html text/javascript
                               application/javascript application/json;
 
@@ -158,9 +158,9 @@ http {
         }
 
         # Custom loading/error page
-        error_page 502 503 504 /kn-error.html;
-        location = /kn-error.html {
-            root /usr/share/nginx/kn-override;
+        error_page 502 503 504 /cn-error.html;
+        location = /cn-error.html {
+            root /usr/share/nginx/cn-override;
             internal;
         }
     }
@@ -171,13 +171,13 @@ http {
         server_name _;
 
         location = /manifest.json {
-            alias /usr/share/nginx/kn-override/manifest.json;
+            alias /usr/share/nginx/cn-override/manifest.json;
             add_header Cache-Control "no-cache, no-store, must-revalidate";
             add_header Content-Type "application/manifest+json";
         }
 
         location /static/icons/ {
-            root /usr/share/nginx/kn-override;
+            root /usr/share/nginx/cn-override;
             try_files \$uri @ha_direct;
             expires 30d;
         }
@@ -205,8 +205,8 @@ http {
             proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection \$connection_upgrade;
 
-            subs_filter 'Home Assistant' 'Konnect Nest' gi;
-            subs_filter 'home-assistant' 'konnect-nest' gi;
+            subs_filter 'Home Assistant' 'Connect Nest' gi;
+            subs_filter 'home-assistant' 'connect-nest' gi;
             subs_filter_types text/html text/javascript
                               application/javascript application/json;
 
@@ -214,9 +214,9 @@ http {
             proxy_buffers 8 128k;
         }
 
-        error_page 502 503 504 /kn-error.html;
-        location = /kn-error.html {
-            root /usr/share/nginx/kn-override;
+        error_page 502 503 504 /cn-error.html;
+        location = /cn-error.html {
+            root /usr/share/nginx/cn-override;
             internal;
         }
     }
@@ -253,8 +253,8 @@ if [[ $WAITED -lt $MAX_WAIT ]]; then
 fi
 
 # ─── Start nginx ────────────────────────────────────────────
-info "Starting Konnect Nest..."
-success "Konnect Nest is running!"
+info "Starting Connect Nest..."
+success "Connect Nest is running!"
 info "  Ingress (HA sidebar): port ${INGRESS_PORT}"
 info "  Direct access:        port 7080"
 info ""

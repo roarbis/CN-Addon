@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ============================================================
-#  Konnect Nest — VirtualBox VM Bootstrap Script
+#  Connect Nest — VirtualBox VM Bootstrap Script
 #  Run this ONCE on a fresh Ubuntu 22.04 / Debian 12 VM
 #  BEFORE installing Home Assistant OS
 #
 #  What this does:
 #    1.  Verifies OS compatibility
 #    2.  Sets a static IP (avoids DHCP drift)
-#    3.  Sets hostname to konnectnest
+#    3.  Sets hostname to connectnest
 #    4.  Installs all HA OS Agent prerequisites
 #    5.  Installs Docker Engine
 #    6.  Installs HA OS Agent (required for HA Supervised)
@@ -41,16 +41,16 @@ fi
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
-info()    { echo -e "${CYAN}[KN]${NC} $*"; }
-success() { echo -e "${GREEN}[KN] ✓${NC} $*"; }
-warn()    { echo -e "${YELLOW}[KN] ⚠${NC} $*"; }
-error()   { echo -e "${RED}[KN] ✗${NC} $*"; exit 1; }
+info()    { echo -e "${CYAN}[CN]${NC} $*"; }
+success() { echo -e "${GREEN}[CN] ✓${NC} $*"; }
+warn()    { echo -e "${YELLOW}[CN] ⚠${NC} $*"; }
+error()   { echo -e "${RED}[CN] ✗${NC} $*"; exit 1; }
 header()  { echo -e "\n${BOLD}${CYAN}══════════════════════════════════════════${NC}";
             echo -e "${BOLD}${CYAN}  $*${NC}";
             echo -e "${BOLD}${CYAN}══════════════════════════════════════════${NC}\n"; }
 
 # ─── Configuration — edit these before running ─────────────
-HOSTNAME="konnectnest"
+HOSTNAME="connectnest"
 HA_VERSION="2025.1.0"           # HA version to install
 HAOS_AGENT_VERSION="2.0.0"     # HA OS Agent version
 # Static IP config — set to match your friend's network
@@ -84,8 +84,8 @@ cat << 'BANNER'
   ╚═╝  ╚═══╝╚══════╝╚══════╝   ╚═╝
 BANNER
 echo -e "${NC}"
-echo -e "${BOLD}  Konnect Nest VM Bootstrap${NC}"
-echo -e "  Installing Home Assistant + Konnect Nest branding"
+echo -e "${BOLD}  Connect Nest VM Bootstrap${NC}"
+echo -e "  Installing Home Assistant + Connect Nest branding"
 echo -e "  Target HA version: ${HA_VERSION}\n"
 
 # ─── Step 1: OS Compatibility Check ────────────────────────
@@ -142,7 +142,7 @@ if [[ -n "$STATIC_IP" && -n "$GATEWAY" ]]; then
         success "Static IP set via NetworkManager: ${STATIC_IP}"
     else
         warn "NetworkManager not found — configuring via netplan"
-        cat > /etc/netplan/01-konnectnest.yaml << NETPLAN
+        cat > /etc/netplan/01-connectnest.yaml << NETPLAN
 network:
   version: 2
   ethernets:
@@ -321,7 +321,7 @@ CURRENT_IP=$(hostname -I | awk '{print $1}')
 
 echo -e "${BOLD}${GREEN}"
 echo "  ╔══════════════════════════════════════════╗"
-echo "  ║      Konnect Nest VM Ready!              ║"
+echo "  ║      Connect Nest VM Ready!              ║"
 echo "  ╚══════════════════════════════════════════╝"
 echo -e "${NC}"
 
@@ -332,11 +332,11 @@ echo ""
 echo -e "${BOLD}  Next Steps:${NC}"
 echo -e "  1. Open ${CYAN}http://${CURRENT_IP}:8123${NC} in your browser"
 echo -e "  2. Complete the HA onboarding (create account, set location)"
-echo -e "  3. Install the Konnect Nest add-on:"
+echo -e "  3. Install the Connect Nest add-on:"
 echo -e "     Settings → Add-ons → Store → ⋮ → Repositories"
-echo -e "     Add: ${CYAN}https://github.com/roarbis/KN-Addon${NC}"
-echo -e "     Then install 'Konnect Nest' from the store"
-echo -e "  4. On iPhone: Safari → Add to Home Screen → 'Konnect Nest'"
+echo -e "     Add: ${CYAN}https://github.com/roarbis/CN-Addon${NC}"
+echo -e "     Then install 'Connect Nest' from the store"
+echo -e "  4. On iPhone: Safari → Add to Home Screen → 'Connect Nest'"
 echo ""
 echo -e "${BOLD}  System Info:${NC}"
 echo -e "  Hostname:  ${HOSTNAME} (${HOSTNAME}.local)"

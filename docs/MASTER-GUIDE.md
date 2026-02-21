@@ -1,4 +1,4 @@
-# Konnect Nest — Master Installation Guide
+# Connect Nest — Master Installation Guide
 # VMware Workstation Pro Edition
 
 > **Audience:** You (the admin) installing at a friend's place
@@ -12,13 +12,13 @@
 ```
 Friend's Windows Machine
 └── VMware Workstation Pro (free)
-    └── Ubuntu 22.04 LTS VM  ←─ "konnectnest" hostname
+    └── Ubuntu 22.04 LTS VM  ←─ "connectnest" hostname
         └── Home Assistant Supervised (Docker)
             ├── Core HA          :8123  ← automation engine
             ├── Mosquitto MQTT   :1883  ← message broker for devices
             ├── Zigbee2MQTT      :8080  ← Zigbee USB dongle bridge
-            └── Konnect Nest     :7080  ← branded nginx overlay
-                └── iPhone PWA          ← "Konnect Nest" on home screen
+            └── Connect Nest     :7080  ← branded nginx overlay
+                └── iPhone PWA          ← "Connect Nest" on home screen
 ```
 
 ---
@@ -31,7 +31,7 @@ Friend's Windows Machine
 | **2** | HA Barebone (stable, tested) | 20 min | [PART-2-HA-INSTALL.md](PART-2-HA-INSTALL.md) |
 | **3** | MQTT Broker | 5 min | [PART-3-MQTT.md](PART-3-MQTT.md) |
 | **4** | Zigbee2MQTT | 10 min | [PART-4-ZIGBEE2MQTT.md](PART-4-ZIGBEE2MQTT.md) |
-| **5** | Konnect Nest Add-on | 10 min | [PART-5-KN-ADDON.md](PART-5-KN-ADDON.md) |
+| **5** | Connect Nest Add-on | 10 min | [PART-5-CN-ADDON.md](PART-5-CN-ADDON.md) |
 | **6** | iPhone PWA | 5 min | [PART-6-PWA-IOS.md](PART-6-PWA-IOS.md) |
 
 ---
@@ -54,7 +54,7 @@ Friend's Windows Machine
 
 ### HA Version Pinning
 - ✅ Note the exact HA version installed (shown in HA → Settings → About)
-- ✅ KN Add-on version must match (KN 2025.1.x = HA 2025.1.x)
+- ✅ CN Add-on version must match (KN 2025.1.x = HA 2025.1.x)
 - ✅ Do NOT let HA auto-update — disable auto-updates in HA settings
 
 ### Credentials — Write These Down
@@ -72,7 +72,7 @@ Zigbee2MQTT:      (no auth by default on LAN)
 | Service | Port | URL |
 |---|---|---|
 | Home Assistant | 8123 | http://[VM-IP]:8123 |
-| Konnect Nest (branded) | 7080 | http://[VM-IP]:7080 |
+| Connect Nest (branded) | 7080 | http://[VM-IP]:7080 |
 | MQTT Broker | 1883 | mqtt://[VM-IP]:1883 |
 | Zigbee2MQTT UI | 8080 | http://[VM-IP]:8080 |
 | SSH (VM) | 22 | ssh knadmin@[VM-IP] |

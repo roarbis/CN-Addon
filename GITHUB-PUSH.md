@@ -1,4 +1,4 @@
-# Pushing Konnect Nest Add-on to GitHub
+# Pushing Connect Nest Add-on to GitHub
 
 > One-time setup. After this, updates are just git add/commit/push.
 
@@ -9,10 +9,10 @@
 Open Git Bash or PowerShell on your Windows machine:
 
 ```bash
-cd "C:\Temp\ClaudeCode\HA-KN-Fork\KN-Addon"
+cd "C:\Temp\ClaudeCode\HA-KN-Fork\CN-Addon"
 git init
 git add .
-git commit -m "Initial Konnect Nest add-on release v2025.1.0"
+git commit -m "Initial Connect Nest add-on release v2025.1.0"
 ```
 
 ---
@@ -20,7 +20,7 @@ git commit -m "Initial Konnect Nest add-on release v2025.1.0"
 ## Step 2 — Connect to GitHub
 
 ```bash
-git remote add origin https://github.com/roarbis/KN-Addon.git
+git remote add origin https://github.com/roarbis/CN-Addon.git
 git branch -M main
 git push -u origin main
 ```
@@ -34,23 +34,23 @@ If you use 2FA, use a **Personal Access Token** instead of password:
 
 ## Step 3 — Verify on GitHub
 
-Open https://github.com/roarbis/KN-Addon
+Open https://github.com/roarbis/CN-Addon
 
 You should see:
 ```
-KN-Addon/
+CN-Addon/
 ├── repository.json          ← HA reads this first
 ├── bootstrap.sh             ← VM setup script
 ├── INSTALL.md               ← This guide
-└── konnect-nest/
+└── connect-nest/
     ├── config.yaml          ← Add-on definition
     ├── Dockerfile           ← Container build
     ├── run.sh               ← Startup script
     └── rootfs/
-        └── usr/share/nginx/kn-override/
+        └── usr/share/nginx/cn-override/
             ├── manifest.json
-            ├── kn-error.html
-            └── static/icons/   ← 17 KN icon files
+            ├── cn-error.html
+            └── static/icons/   ← 17 CN icon files
 ```
 
 ---
@@ -59,8 +59,8 @@ KN-Addon/
 
 In any HA instance:
 1. Settings → Add-ons → Store → ⋮ → Repositories
-2. Add: `https://github.com/roarbis/KN-Addon`
-3. "Konnect Nest" should appear in the store
+2. Add: `https://github.com/roarbis/CN-Addon`
+3. "Connect Nest" should appear in the store
 
 ---
 
@@ -76,7 +76,7 @@ When you update the add-on (new HA version support, new icons, etc.):
 #    homeassistant: "2025.1.0"
 
 # 3. Commit and push
-cd "C:\Temp\ClaudeCode\HA-KN-Fork\KN-Addon"
+cd "C:\Temp\ClaudeCode\HA-KN-Fork\CN-Addon"
 git add .
 git commit -m "KN v2025.4.0 — tested on HA 2025.4.x"
 git push
@@ -84,7 +84,7 @@ git push
 # 4. Create a GitHub Release (optional but nice)
 # GitHub → Releases → Draft new release
 # Tag: v2025.4.0
-# Title: Konnect Nest v2025.4.0
+# Title: Connect Nest v2025.4.0
 # Body: "Tested on Home Assistant 2025.4.x. Quarterly update."
 ```
 
@@ -97,7 +97,7 @@ Friends will see an **"Update available"** notification in their HA add-on panel
 | File | What HA Does With It |
 |---|---|
 | `repository.json` | HA fetches this first to verify it's a valid add-on repo |
-| `konnect-nest/config.yaml` | HA reads add-on name, version, arch, ports, options |
-| `konnect-nest/Dockerfile` | HA Supervisor builds this on the friend's machine |
-| `konnect-nest/run.sh` | Executed when the add-on container starts |
-| `konnect-nest/rootfs/` | Files copied into the container at build time |
+| `connect-nest/config.yaml` | HA reads add-on name, version, arch, ports, options |
+| `connect-nest/Dockerfile` | HA Supervisor builds this on the friend's machine |
+| `connect-nest/run.sh` | Executed when the add-on container starts |
+| `connect-nest/rootfs/` | Files copied into the container at build time |

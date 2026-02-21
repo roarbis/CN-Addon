@@ -62,8 +62,8 @@ It installs a desktop version with wrong settings.
 ### Step 4 — VM Name & Location
 | Field | Value |
 |---|---|
-| Virtual machine name | `KonnectNest` |
-| Location | `C:\VMs\KonnectNest` (or your preferred path) |
+| Virtual machine name | `ConnectNest` |
+| Location | `C:\VMs\ConnectNest` (or your preferred path) |
 
 Click **Next**
 
@@ -154,7 +154,7 @@ Select your language → **English** → Enter
 | Field | Value |
 |---|---|
 | Your name | `KN Admin` |
-| Your server's name | `konnectnest` |
+| Your server's name | `connectnest` |
 | Pick a username | `knadmin` |
 | Choose a password | Something strong — **write it down** |
 | Confirm password | Same |
@@ -186,7 +186,7 @@ When prompted **"Remove the installation medium"** → press **Enter**
 The VM reboots and shows a login prompt:
 
 ```
-konnectnest login: knadmin
+connectnest login: knadmin
 Password: [your password]
 ```
 
@@ -212,7 +212,7 @@ ssh knadmin@192.168.1.87
 
 You should get a shell prompt:
 ```
-knadmin@konnectnest:~$
+knadmin@connectnest:~$
 ```
 
 ✅ SSH working means you can manage this VM remotely for all future steps.
@@ -250,11 +250,11 @@ So the VM starts automatically when Windows boots (essential for friends' setups
 Then use Windows Task Scheduler:
 1. Open **Task Scheduler** (search in Start menu)
 2. **Create Basic Task**
-3. Name: `Start KonnectNest VM`
+3. Name: `Start ConnectNest VM`
 4. Trigger: **"When the computer starts"**
 5. Action: **"Start a program"**
 6. Program: `"C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe"`
-7. Arguments: `start "C:\VMs\KonnectNest\KonnectNest.vmx" nogui`
+7. Arguments: `start "C:\VMs\ConnectNest\ConnectNest.vmx" nogui`
 8. ✅ Check **"Open Properties dialog"** → Finish
 9. In Properties → General: ✅ **"Run whether user is logged on or not"**
 10. ✅ **"Run with highest privileges"**
@@ -265,9 +265,9 @@ Then use Windows Task Scheduler:
 # Run in PowerShell
 $startup = [Environment]::GetFolderPath("Startup")
 $ws = New-Object -ComObject WScript.Shell
-$sc = $ws.CreateShortcut("$startup\KonnectNest.lnk")
+$sc = $ws.CreateShortcut("$startup\ConnectNest.lnk")
 $sc.TargetPath = "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe"
-$sc.Arguments = 'start "C:\VMs\KonnectNest\KonnectNest.vmx" nogui'
+$sc.Arguments = 'start "C:\VMs\ConnectNest\ConnectNest.vmx" nogui'
 $sc.Save()
 Write-Host "Startup shortcut created"
 ```
@@ -280,7 +280,7 @@ Before doing anything else — take a clean snapshot.
 This is your **"factory reset"** point if anything goes wrong.
 
 In VMware:
-- Right-click `KonnectNest` VM → **Snapshot → Take Snapshot**
+- Right-click `ConnectNest` VM → **Snapshot → Take Snapshot**
 - Name: `00-clean-ubuntu-install`
 - Description: `Fresh Ubuntu 22.04, SSH only, no HA yet`
 - Click **Take Snapshot**

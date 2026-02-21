@@ -1,6 +1,6 @@
-# Konnect Nest — Complete Installation Guide
+# Connect Nest — Complete Installation Guide
 
-> From a blank VirtualBox VM to a fully branded Konnect Nest smart home.
+> From a blank VirtualBox VM to a fully branded Connect Nest smart home.
 > Estimated total time: **45–60 minutes** (mostly waiting for downloads)
 
 ---
@@ -10,8 +10,8 @@
 ```
 VirtualBox VM (Ubuntu 22.04)
   └── Home Assistant Supervised (Docker-based)
-        └── Konnect Nest Add-on (nginx branding layer)
-              └── iPhone PWA — "Konnect Nest" on home screen
+        └── Connect Nest Add-on (nginx branding layer)
+              └── iPhone PWA — "Connect Nest" on home screen
 ```
 
 ---
@@ -36,7 +36,7 @@ Open VirtualBox → **New**
 
 | Setting | Value |
 |---|---|
-| Name | `KonnectNest` |
+| Name | `ConnectNest` |
 | Type | Linux |
 | Version | Ubuntu (64-bit) |
 | RAM | **4096 MB minimum** (8192 MB recommended) |
@@ -59,8 +59,8 @@ Open VirtualBox → **New**
 3. Network: let it use DHCP for now (we set static IP in bootstrap)
 4. Storage: use entire disk, no LVM needed
 5. Profile setup:
-   - Your name: `Konnect Nest Admin`
-   - Server name: `konnectnest`
+   - Your name: `Connect Nest Admin`
+   - Server name: `connectnest`
    - Username: `knadmin` (or whatever you prefer)
    - Password: something strong — **write it down**
 6. **Do NOT install** OpenSSH during Ubuntu setup — bootstrap handles it
@@ -72,7 +72,7 @@ Open VirtualBox → **New**
 
 After reboot, Ubuntu shows the IP at the login prompt:
 ```
-konnectnest login: _
+connectnest login: _
 
   System information:
     ...
@@ -98,7 +98,7 @@ Write this IP down — you'll need it throughout setup.
 
 **From your Windows admin machine** (using Git Bash or WSL):
 ```bash
-scp "C:/Temp/ClaudeCode/HA-KN-Fork/KN-Addon/bootstrap.sh" \
+scp "C:/Temp/ClaudeCode/HA-KN-Fork/CN-Addon/bootstrap.sh" \
     knadmin@192.168.1.XXX:~/bootstrap.sh
 ```
 
@@ -106,7 +106,7 @@ Or from the VM itself (if you have internet):
 ```bash
 # On the VM
 curl -o ~/bootstrap.sh \
-  https://raw.githubusercontent.com/roarbis/KN-Addon/main/bootstrap.sh
+  https://raw.githubusercontent.com/roarbis/CN-Addon/main/bootstrap.sh
 ```
 
 ---
@@ -148,21 +148,21 @@ sudo ~/bootstrap.sh
 ══════════════════════════════════════════
   Step 1/9 — Checking OS compatibility
 ══════════════════════════════════════════
-[KN] Detected OS: ubuntu 22.04
-[KN] ✓ Ubuntu 22.04 LTS — fully supported
+[CN] Detected OS: ubuntu 22.04
+[CN] ✓ Ubuntu 22.04 LTS — fully supported
 
 ══════════════════════════════════════════
   Step 2/9 — Setting hostname
 ══════════════════════════════════════════
-[KN] ✓ Hostname set to: konnectnest
+[CN] ✓ Hostname set to: connectnest
 
 ... (continues through all 9 steps) ...
 
 ══════════════════════════════════════════
-  Konnect Nest VM Ready!
+  Connect Nest VM Ready!
 ══════════════════════════════════════════
 Web (IP):    http://192.168.1.100:8123
-Web (mDNS):  http://konnectnest.local:8123
+Web (mDNS):  http://connectnest.local:8123
 ```
 
 > **Total time:** 10–20 minutes depending on internet speed.
@@ -195,7 +195,7 @@ Or just wait and keep refreshing `http://192.168.1.100:8123` in your browser.
 Navigate to: `http://192.168.1.XXX:8123`
 
 > **Note:** At this stage you'll see "Home Assistant" branding.
-> This is the one-time setup wizard. Once Konnect Nest add-on
+> This is the one-time setup wizard. Once Connect Nest add-on
 > is installed, all branding changes.
 
 ---
@@ -243,11 +243,11 @@ This unlocks add-on configuration options.
 
 ---
 
-## PART 4 — Install Konnect Nest Add-on
+## PART 4 — Install Connect Nest Add-on
 
 > This is where the magic happens. Takes about 5 minutes.
 
-### 4.1 — Add the Konnect Nest Repository
+### 4.1 — Add the Connect Nest Repository
 
 1. In HA, go to: **Settings → Add-ons**
 2. Click **Add-on Store** (bottom right)
@@ -255,19 +255,19 @@ This unlocks add-on configuration options.
 4. Click **Repositories**
 5. In the text field, paste:
    ```
-   https://github.com/roarbis/KN-Addon
+   https://github.com/roarbis/CN-Addon
    ```
 6. Click **Add**
 7. Click **Close**
 
 > The page will refresh and you'll see a new section
-> **"Konnect Nest Add-ons"** in the store.
+> **"Connect Nest Add-ons"** in the store.
 
 ---
 
 ### 4.2 — Install the Add-on
 
-1. In the store, find **"Konnect Nest"**
+1. In the store, find **"Connect Nest"**
 2. Click on it
 3. Click **Install**
 4. Wait for the build to complete (2–5 minutes — it's building the Docker container)
@@ -295,13 +295,13 @@ This unlocks add-on configuration options.
 4. Click **Start**
 5. Click **Log** tab to see startup output:
    ```
-   [Konnect Nest] ============================================
-   [Konnect Nest]   Konnect Nest v2025.1.0
-   [Konnect Nest]   Your smart home, beautifully connected.
-   [Konnect Nest] ============================================
-   [Konnect Nest] HA Core version detected: 2025.1.x
-   [Konnect Nest] ✓ HA Core is ready
-   [Konnect Nest] ✓ Konnect Nest is running!
+   [Connect Nest] ============================================
+   [Connect Nest]   Connect Nest v2025.1.0
+   [Connect Nest]   Your smart home, beautifully connected.
+   [Connect Nest] ============================================
+   [Connect Nest] HA Core version detected: 2025.1.x
+   [Connect Nest] ✓ HA Core is ready
+   [Connect Nest] ✓ Connect Nest is running!
    ```
 
 ---
@@ -309,8 +309,8 @@ This unlocks add-on configuration options.
 ### 4.5 — Verify Branding
 
 Refresh your browser. You should now see:
-- ✅ Browser tab says **"Konnect Nest"**
-- ✅ Sidebar shows the Konnect Nest panel
+- ✅ Browser tab says **"Connect Nest"**
+- ✅ Sidebar shows the Connect Nest panel
 - ✅ No mention of "Home Assistant" in the UI
 
 If you still see "Home Assistant" — **clear your browser cache**:
@@ -322,7 +322,7 @@ If you still see "Home Assistant" — **clear your browser cache**:
 ## PART 5 — iPhone PWA Setup
 
 > Do this on your friend's iPhone. Takes 2 minutes.
-> Gives them a "Konnect Nest" icon on their home screen.
+> Gives them a "Connect Nest" icon on their home screen.
 
 ### 5.1 — Connect iPhone to Same Network
 
@@ -336,7 +336,7 @@ The iPhone must be on the **same WiFi** as the VM.
 
 Navigate to: `http://192.168.1.XXX:7080`
 
-> Port 7080 is the direct access port served by Konnect Nest add-on.
+> Port 7080 is the direct access port served by Connect Nest add-on.
 > (Port 8123 still works but shows stock HA login branding)
 
 ---
@@ -346,19 +346,19 @@ Navigate to: `http://192.168.1.XXX:7080`
 1. Tap the **Share button** (box with upward arrow ↑) at the bottom
 2. Scroll down in the share sheet
 3. Tap **"Add to Home Screen"**
-4. Name shows: **"Konnect Nest"** ← your brand!
+4. Name shows: **"Connect Nest"** ← your brand!
 5. Tap **"Add"** (top right)
 
-**Result:** The Konnect Nest icon appears on the iPhone home screen.
+**Result:** The Connect Nest icon appears on the iPhone home screen.
 
 ---
 
 ### 5.4 — Launch the PWA
 
-Tap the **Konnect Nest** icon.
+Tap the **Connect Nest** icon.
 
 - Opens full-screen (no Safari address bar)
-- Shows the Konnect Nest branded interface
+- Shows the Connect Nest branded interface
 - Logs in with the HA account you created
 - Behaves like a native app
 
@@ -367,10 +367,10 @@ Tap the **Konnect Nest** icon.
 ### 5.5 — Enable Push Notifications
 
 1. First time the PWA opens, Safari asks:
-   **"konnectnest.local would like to send notifications"**
+   **"connectnest.local would like to send notifications"**
 2. Tap **"Allow"**
 3. In HA: Settings → Integrations → you'll see the device registered
-4. Notifications from automations now appear as **"Konnect Nest"** on the phone
+4. Notifications from automations now appear as **"Connect Nest"** on the phone
 
 ---
 
@@ -385,7 +385,7 @@ VM Setup
   [ ] VirtualBox VM running Ubuntu 22.04
   [ ] Network: Bridged adapter (not NAT)
   [ ] Static IP configured (optional but recommended)
-  [ ] Hostname: konnectnest
+  [ ] Hostname: connectnest
   [ ] VM starts automatically when host boots (VirtualBox startup settings)
 
 Home Assistant
@@ -394,25 +394,25 @@ Home Assistant
   [ ] Location set
   [ ] Advanced mode enabled
 
-Konnect Nest Add-on
-  [ ] KN repository added to HA add-on store
-  [ ] Konnect Nest add-on installed
+Connect Nest Add-on
+  [ ] CN repository added to HA add-on store
+  [ ] Connect Nest add-on installed
   [ ] Add-on running (green status)
   [ ] Start on boot: ON
   [ ] Watchdog: ON
-  [ ] Browser tab shows "Konnect Nest"
+  [ ] Browser tab shows "Connect Nest"
   [ ] No "Home Assistant" text visible in UI
 
 iPhone PWA
   [ ] Safari opened (not Chrome)
   [ ] Navigated to http://192.168.1.XXX:7080
-  [ ] "Konnect Nest" added to home screen
+  [ ] "Connect Nest" added to home screen
   [ ] PWA opens full-screen
   [ ] Push notification permission granted
 
 Handoff
   [ ] Friend knows their login credentials
-  [ ] Friend knows to use the "Konnect Nest" icon (not Safari/browser)
+  [ ] Friend knows to use the "Connect Nest" icon (not Safari/browser)
   [ ] You have SSH access to the VM for future updates
 ```
 
@@ -420,7 +420,7 @@ Handoff
 
 ## PART 7 — VM Auto-Start (Important!)
 
-So Konnect Nest starts automatically when your friend's PC/NUC boots:
+So Connect Nest starts automatically when your friend's PC/NUC boots:
 
 **On your admin machine:**
 1. Open VirtualBox
@@ -430,11 +430,11 @@ So Konnect Nest starts automatically when your friend's PC/NUC boots:
 **Easier — VirtualBox CLI:**
 ```bash
 # On Windows admin machine (PowerShell)
-# Replace "KonnectNest" with your VM name
-VBoxManage modifyvm "KonnectNest" --autostart-enabled on --autostop-type savestate
+# Replace "ConnectNest" with your VM name
+VBoxManage modifyvm "ConnectNest" --autostart-enabled on --autostop-type savestate
 
 # On Linux host
-echo "KonnectNest" | sudo tee /etc/vbox/autostart.d/konnectnest.conf
+echo "ConnectNest" | sudo tee /etc/vbox/autostart.d/connectnest.conf
 ```
 
 Or just set the **VM to Headless Start** and add VirtualBox to Windows startup.
@@ -453,13 +453,13 @@ ssh knadmin@192.168.1.XXX
 sudo ha core update --version 2025.4.0
 ```
 
-### 8.2 — Update Konnect Nest Add-on
-1. Push new version to GitHub (roarbis/KN-Addon)
-2. In friend's HA: Settings → Add-ons → Konnect Nest → **Update**
+### 8.2 — Update Connect Nest Add-on
+1. Push new version to GitHub (roarbis/CN-Addon)
+2. In friend's HA: Settings → Add-ons → Connect Nest → **Update**
 
 ### 8.3 — Version Tracking
 
-| Release | KN Version | HA Version | Date |
+| Release | CN Version | HA Version | Date |
 |---|---|---|---|
 | Initial | 2025.1.0 | 2025.1.x | 2025-01 |
 | Q2 | 2025.4.0 | 2025.4.x | 2025-04 |
@@ -479,14 +479,14 @@ sudo docker ps | grep homeassistant
 # If not: sudo systemctl restart hassio-supervisor
 ```
 
-### "Konnect Nest" add-on won't start
+### "Connect Nest" add-on won't start
 ```bash
-# Check logs in HA: Settings → Add-ons → Konnect Nest → Log tab
+# Check logs in HA: Settings → Add-ons → Connect Nest → Log tab
 # Common cause: nginx config error or HA not ready yet
 # Fix: wait 2 minutes, click Restart in add-on
 ```
 
-### iPhone shows "Home Assistant" not "Konnect Nest"
+### iPhone shows "Home Assistant" not "Connect Nest"
 - Remove the existing PWA from iPhone home screen
 - Clear Safari cache: Settings → Safari → Clear History and Website Data
 - Re-add from `http://192.168.1.XXX:7080` (not 8123)
@@ -511,11 +511,11 @@ sudo aa-complain /usr/bin/docker
 | URL | Purpose |
 |---|---|
 | `http://VM-IP:8123` | HA direct (shows HA branding on login) |
-| `http://VM-IP:7080` | Konnect Nest branded (use this for PWA) |
-| `http://konnectnest.local:7080` | mDNS access (same network only) |
+| `http://VM-IP:7080` | Connect Nest branded (use this for PWA) |
+| `http://connectnest.local:7080` | mDNS access (same network only) |
 
 | Credential | Location |
 |---|---|
 | VM SSH | `knadmin@VM-IP` |
 | HA Admin | Set during onboarding |
-| HA Add-on Repo | `https://github.com/roarbis/KN-Addon` |
+| HA Add-on Repo | `https://github.com/roarbis/CN-Addon` |

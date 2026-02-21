@@ -1,18 +1,18 @@
 # PART 6 — iPhone PWA Setup
 
 > **Time:** ~5 minutes per iPhone
-> **Previous step:** Part 5 complete — Konnect Nest add-on running on :7080
-> **Goal:** "Konnect Nest" app icon on friend's iPhone home screen
+> **Previous step:** Part 5 complete — Connect Nest add-on running on :7080
+> **Goal:** "Connect Nest" app icon on friend's iPhone home screen
 
 ---
 
 ## What Your Friend Will See
 
 After this part, your friend has:
-- A **"Konnect Nest"** icon on their iPhone home screen
+- A **"Connect Nest"** icon on their iPhone home screen
 - Opens **full-screen** (no browser address bar — looks like a native app)
 - Shows the **KN branded interface** with their smart home devices
-- **Push notifications** from automations show as "Konnect Nest"
+- **Push notifications** from automations show as "Connect Nest"
 - Login session persists (they stay logged in)
 
 ---
@@ -20,7 +20,7 @@ After this part, your friend has:
 ## Prerequisites
 
 Before starting:
-- ✅ KN add-on running at `http://192.168.1.XXX:7080`
+- ✅ CN add-on running at `http://192.168.1.XXX:7080`
 - ✅ iPhone on the **same WiFi** as the VM
 - ✅ iPhone running **iOS 16.4 or later** (for push notification support)
 
@@ -34,7 +34,7 @@ Before starting:
 1. Open **Safari** (the blue compass icon)
 2. Type in the address bar: `http://192.168.1.XXX:7080`
    (replace XXX with the VM's actual IP)
-3. You should see the **Konnect Nest** login screen
+3. You should see the **Connect Nest** login screen
 4. **Log in** with the HA admin credentials
 
 ---
@@ -51,14 +51,14 @@ You'll see:
 ┌─────────────────────────────┐
 │  Add to Home Screen         │
 │                             │
-│  [KN Icon]  Konnect Nest ←  │  ← Your brand name!
+│  [KN Icon]  Connect Nest ←  │  ← Your brand name!
 │                             │
 │  192.168.1.XXX:7080         │
 │                      [Add]  │
 └─────────────────────────────┘
 ```
 
-4. The name already says **"Konnect Nest"** (from manifest.json)
+4. The name already says **"Connect Nest"** (from manifest.json)
 5. Tap **"Add"** (top right)
 
 ---
@@ -66,13 +66,13 @@ You'll see:
 ## 6.3 — Launch from Home Screen
 
 1. Press the iPhone Home button (or swipe up)
-2. Find the **"Konnect Nest"** icon on the home screen
+2. Find the **"Connect Nest"** icon on the home screen
 3. Tap it
 
 **What you get:**
 - Opens **full screen** — no Safari address bar, no browser controls
 - Shows in the App Switcher as its own "app"
-- The KN logo and colours you designed
+- The CN logo and colours you designed
 - The full smart home interface
 
 ---
@@ -82,7 +82,7 @@ You'll see:
 The first time the PWA opens, iOS may show:
 
 ```
-"konnectnest.local" Would Like to
+"connectnest.local" Would Like to
 Send You Notifications
 
 [Don't Allow]    [Allow]
@@ -112,7 +112,7 @@ Send a test notification from HA:
    (the device name shown in Settings → Devices)
 3. Service data:
 ```yaml
-title: "Konnect Nest"
+title: "Connect Nest"
 message: "Your smart home is connected!"
 ```
 4. Click **Call Service**
@@ -120,13 +120,13 @@ message: "Your smart home is connected!"
 Your friend's iPhone should receive:
 ```
 ┌─────────────────────────────┐
-│ [KN Icon]  Konnect Nest     │  ← Your brand, your icon
+│ [KN Icon]  Connect Nest     │  ← Your brand, your icon
 │ Your smart home is          │
 │ connected!                  │
 └─────────────────────────────┘
 ```
 
-✅ The notification shows **"Konnect Nest"** — not "Home Assistant".
+✅ The notification shows **"Connect Nest"** — not "Home Assistant".
 
 ---
 
@@ -201,13 +201,13 @@ If the friend has a partner or family members who also want access:
    - Each registers as a separate device in HA
    - Each gets their own notification target (`notify.mobile_app_xxx`)
 
-3. Each person sees the same **"Konnect Nest"** branded interface
+3. Each person sees the same **"Connect Nest"** branded interface
 
 ---
 
 ## 6.8 — Troubleshooting PWA
 
-### PWA shows "Home Assistant" instead of "Konnect Nest"
+### PWA shows "Home Assistant" instead of "Connect Nest"
 **Cause:** Browser cached the old manifest from port 8123.
 
 **Fix:**
@@ -228,7 +228,7 @@ If the friend has a partner or family members who also want access:
 - **Don't** clear website data if you want to stay logged in
 
 ### Push notifications not arriving
-1. Check iPhone: **Settings → Notifications → Konnect Nest** → ensure All On
+1. Check iPhone: **Settings → Notifications → Connect Nest** → ensure All On
 2. Check iOS version: must be **16.4+** for Web Push
 3. In HA: check the mobile device is still registered (Settings → Devices)
 4. Re-register: open PWA → Settings → Companion App → Re-register
@@ -251,7 +251,7 @@ Create simple instructions to leave with your friend:
 ║        Smart Home Guide              ║
 ╠══════════════════════════════════════╣
 ║                                      ║
-║  Tap the "Konnect Nest" icon         ║
+║  Tap the "Connect Nest" icon         ║
 ║  on your home screen.                ║
 ║                                      ║
 ║  Username: ___________________       ║
@@ -272,10 +272,10 @@ Create simple instructions to leave with your friend:
 | Check | Status |
 |---|---|
 | PWA installed on iPhone from :7080 | ☐ |
-| Home screen shows "Konnect Nest" icon | ☐ |
+| Home screen shows "Connect Nest" icon | ☐ |
 | PWA opens full-screen (no browser bar) | ☐ |
 | Push notification permission granted | ☐ |
-| Test notification received showing "Konnect Nest" | ☐ |
+| Test notification received showing "Connect Nest" | ☐ |
 | Device registered in HA (Settings → Devices) | ☐ |
 | At least 1 automation set up | ☐ |
 
@@ -283,15 +283,15 @@ Create simple instructions to leave with your friend:
 
 ## 🎉 Installation Complete!
 
-Your friend now has a fully branded **Konnect Nest** smart home:
+Your friend now has a fully branded **Connect Nest** smart home:
 
 ```
 ✅ Ubuntu 22.04 VM on VMware (auto-starts with Windows)
 ✅ Home Assistant Supervised (pinned version, auto-updates disabled)
 ✅ Mosquitto MQTT Broker (device communication backbone)
 ✅ Zigbee2MQTT (all Zigbee devices paired and working)
-✅ Konnect Nest Add-on (full branding — no "Home Assistant" visible)
-✅ iPhone PWA ("Konnect Nest" on home screen, push notifications)
+✅ Connect Nest Add-on (full branding — no "Home Assistant" visible)
+✅ iPhone PWA ("Connect Nest" on home screen, push notifications)
 ```
 
 **→ Next maintenance: [PART-7-UPDATES.md](PART-7-UPDATES.md)**

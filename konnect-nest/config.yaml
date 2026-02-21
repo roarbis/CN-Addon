@@ -1,10 +1,10 @@
 # ============================================================
-#  Konnect Nest Add-on — config.yaml
+#  Connect Nest Add-on — config.yaml
 #
 #  Versioning convention:
-#    KN version mirrors HA version it was built/tested against.
-#    KN 2025.1.0 = tested on HA 2025.1.x
-#    KN 2025.4.0 = tested on HA 2025.4.x  (quarterly update)
+#    CN version mirrors HA version it was built/tested against.
+#    CN 2025.1.0 = tested on HA 2025.1.x
+#    CN 2025.4.0 = tested on HA 2025.4.x  (quarterly update)
 #
 #  Compatibility:
 #    homeassistant field = MINIMUM HA version required.
@@ -12,11 +12,11 @@
 #    running older than the declared minimum.
 # ============================================================
 
-name: "Konnect Nest"
+name: "Connect Nest"
 version: "2025.1.0"
-slug: "konnect_nest"
+slug: "connect_nest"
 description: "Your smart home, beautifully connected."
-url: "https://github.com/roarbis/KN-Addon"
+url: "https://github.com/roarbis/CN-Addon"
 
 # Minimum HA version — covers all installs from 2024.1 onwards
 homeassistant: "2024.1.0"
@@ -35,8 +35,8 @@ ports:
   443/tcp: 7443
 
 ports_description:
-  80/tcp: "Konnect Nest web interface (HTTP)"
-  443/tcp: "Konnect Nest web interface (HTTPS)"
+  80/tcp: "Connect Nest web interface (HTTP)"
+  443/tcp: "Connect Nest web interface (HTTPS)"
 
 # Add-on options (configurable by user in HA UI)
 options:
@@ -56,8 +56,8 @@ host_network: true          # Required to reach HA on localhost:8123
 privileged: false
 full_access: false
 
-# Ingress — embeds KN interface directly inside HA sidebar
-# This means friends see "Konnect Nest" in their sidebar
+# Ingress — embeds CN interface directly inside HA sidebar
+# This means friends see "Connect Nest" in their sidebar
 # and clicking it opens the branded interface inside HA
 ingress: true
 ingress_port: 8099
@@ -65,13 +65,13 @@ ingress_stream: false
 
 # Panel config — shows in HA sidebar
 panel_icon: "mdi:home-lightning-bolt-outline"
-panel_title: "Konnect Nest"
+panel_title: "Connect Nest"
 panel_admin: false          # All users see it, not just admins
 
 # Image — built locally on friend's machine from Dockerfile
 # (no external registry needed for now)
 # To use pre-built images later:
-# image: "ghcr.io/roarbis/konnect-nest-{arch}"
+# image: "ghcr.io/roarbis/connect-nest-{arch}"
 
 # Resource limits
 map:
