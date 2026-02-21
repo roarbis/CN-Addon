@@ -23,7 +23,7 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Connect Nest v2025.3.1"
+info "  Connect Nest v2025.3.2"
 info "  Your smart home, beautifully connected."
 info "============================================"
 info "HA backend port: ${HA_PORT}"
@@ -358,11 +358,26 @@ fi
 
 # ─── Start onboarding wizard backend ────────────────────────
 info "Starting CN Onboarding Wizard backend..."
-CN_HA_PORT="${HA_PORT}" \
-    python3 /usr/share/nginx/cn-wizard/wizard.py \
-    >> /proc/1/fd/1 2>&1 &
-WIZARD_PID=$!
-success "Wizard backend started (PID ${WIZARD_PID})"
+
+# Verify Python3 is available before attempting to start
+if ! command -v python3 &>/dev/null; then
+    warn "python3 not found — onboarding wizard will be unavailable"
+    warn "Add python3 to apk packages in Dockerfile if wizard is needed"
+else
+    CN_HA_PORT="${HA_PORT}" \
+        python3 /usr/share/nginx/cn-wizard/wizard.py \
+        >> /proc/1/fd/1 2>&1 &
+    WIZARD_PID=$!
+
+    # Wait 2 seconds and confirm the process is still alive (not crashed at startup)
+    sleep 2
+    if kill -0 "${WIZARD_PID}" 2>/dev/null; then
+        success "Wizard backend running (PID ${WIZARD_PID}) — access at /onboarding/"
+    else
+        warn "Wizard backend exited immediately — check logs above for Python errors"
+        warn "Onboarding wizard will be unavailable until this is resolved"
+    fi
+fi
 
 # ─── Start nginx ────────────────────────────────────────────
 info "Starting Connect Nest..."
