@@ -10,7 +10,6 @@ FROM $BUILD_FROM
 # Install nginx and required tools
 RUN apk add --no-cache \
     nginx \
-    nginx-mod-http-subs-filter \
     curl \
     bash \
     jq

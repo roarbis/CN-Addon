@@ -60,8 +60,6 @@ worker_processes 1;
 error_log /proc/1/fd/1 warn;
 pid /run/nginx/nginx.pid;
 
-load_module /usr/lib/nginx/modules/ngx_http_substitutions_filter_module.so;
-
 events {
     worker_connections 512;
 }
@@ -147,11 +145,11 @@ http {
 
             # ── Runtime branding replacement ──────────────
             # Replaces ALL occurrences in proxied HTML/JS responses
-            # This is the safety net that catches everything
-            subs_filter 'Home Assistant' 'Connect Nest' gi;
-            subs_filter 'home-assistant' 'connect-nest' gi;
-            subs_filter_types text/html text/javascript
-                              application/javascript application/json;
+            # Uses nginx built-in sub_filter (ngx_http_sub_module)
+            sub_filter_once off;
+            sub_filter 'Home Assistant' 'Connect Nest';
+            sub_filter 'home-assistant' 'connect-nest';
+            sub_filter_types text/html text/javascript application/javascript application/json;
 
             proxy_buffer_size 128k;
             proxy_buffers 8 128k;
@@ -205,10 +203,10 @@ http {
             proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection \$connection_upgrade;
 
-            subs_filter 'Home Assistant' 'Connect Nest' gi;
-            subs_filter 'home-assistant' 'connect-nest' gi;
-            subs_filter_types text/html text/javascript
-                              application/javascript application/json;
+            sub_filter_once off;
+            sub_filter 'Home Assistant' 'Connect Nest';
+            sub_filter 'home-assistant' 'connect-nest';
+            sub_filter_types text/html text/javascript application/javascript application/json;
 
             proxy_buffer_size 128k;
             proxy_buffers 8 128k;
