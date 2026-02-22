@@ -23,7 +23,7 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Connect Nest v2025.3.3"
+info "  Connect Nest v2025.3.5"
 info "  Your smart home, beautifully connected."
 info "============================================"
 info "HA backend port: ${HA_PORT}"
@@ -147,10 +147,16 @@ http {
             proxy_send_timeout 300;
         }
 
+        # Onboarding wizard — redirect no-trailing-slash to canonical URL
+        location = /onboarding {
+            return 301 /onboarding/;
+        }
+
         # Onboarding wizard — static frontend
+        # Use root (not alias) so that try_files resolves paths correctly
         location /onboarding/ {
-            alias /usr/share/nginx/cn-override/onboarding/;
-            try_files \$uri \$uri/ /onboarding/index.html;
+            root /usr/share/nginx/cn-override;
+            index index.html;
             add_header Cache-Control "no-cache, no-store, must-revalidate";
         }
 
@@ -238,10 +244,16 @@ http {
             proxy_send_timeout 300;
         }
 
+        # Onboarding wizard — redirect no-trailing-slash to canonical URL
+        location = /onboarding {
+            return 301 /onboarding/;
+        }
+
         # Onboarding wizard — static frontend
+        # Use root (not alias) so that try_files resolves paths correctly
         location /onboarding/ {
-            alias /usr/share/nginx/cn-override/onboarding/;
-            try_files \$uri \$uri/ /onboarding/index.html;
+            root /usr/share/nginx/cn-override;
+            index index.html;
             add_header Cache-Control "no-cache, no-store, must-revalidate";
         }
 

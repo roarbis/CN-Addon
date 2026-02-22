@@ -164,6 +164,11 @@
   /* ── Divider ── */
   .divider { border: none; border-top: 1px solid rgba(95,117,117,0.3); margin: 1.25rem 0; }
 
+  /* ── Diagnostic box ── */
+  .diag-box { font-size: 0.72rem; font-family: monospace; color: var(--text-dim);
+    background: rgba(0,0,0,0.35); border-radius: 4px; padding: 0.35rem 0.65rem;
+    margin-top: 0.6rem; overflow-x: auto; white-space: pre; }
+
   /* ── Fade in ── */
   .step-content { animation: fadeIn 0.22s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
@@ -295,25 +300,40 @@ async function renderWelcome() {
         your Zigbee coordinator and backups. The next page will explain exactly what you need
         to have ready before we begin.
       </p>
-      <div class="btn-actions">
+      <div class="btn-actions" id="welcome-actions">
         <button class="btn btn-primary" id="start-btn" disabled onclick="next()">Continue →</button>
       </div>
     </div>`;
 
+  await checkHaStatus();
+}
+
+async function checkHaStatus() {
+  const box = document.getElementById('ha-box');
+  const actions = document.getElementById('welcome-actions');
+  box.className = 'alert alert-info';
+  box.textContent = 'Checking Home Assistant connection…';
+  document.getElementById('start-btn').disabled = true;
+
   try {
     const s = await get('/status');
-    const box = document.getElementById('ha-box');
     if (s.ha_online) {
       box.className = 'alert alert-success';
-      box.textContent = `✓ Home Assistant ${s.ha_version} is running`;
+      box.textContent = `✓ Home Assistant ${s.ha_version !== 'unknown' ? s.ha_version : ''} is running`.trim();
+      document.getElementById('start-btn').disabled = false;
     } else {
+      const diag = s._diag || {};
       box.className = 'alert alert-error';
-      box.textContent = '✗ Cannot reach Home Assistant — make sure it is running';
+      box.innerHTML = `✗ Cannot reach Home Assistant — make sure it is running
+        <div class="diag-box">tcp=${diag.tcp} http=${diag.http} sup=${diag.sup} ver=${diag.ver} token=${diag.token}</div>`;
+      actions.innerHTML = `
+        <button class="btn btn-primary" onclick="checkHaStatus()">↺ Retry check</button>
+        <button class="btn btn-secondary" onclick="next()" title="Supervisor API calls may fail if HA is not running">Proceed anyway →</button>`;
     }
-    document.getElementById('start-btn').disabled = !s.ha_online;
   } catch(e) {
-    document.getElementById('ha-box').className = 'alert alert-error';
-    document.getElementById('ha-box').textContent = 'Connection error: ' + e.message;
+    box.className = 'alert alert-error';
+    box.textContent = 'Connection error: ' + e.message;
+    actions.innerHTML = `<button class="btn btn-primary" onclick="checkHaStatus()">↺ Retry check</button>`;
   }
 }
 

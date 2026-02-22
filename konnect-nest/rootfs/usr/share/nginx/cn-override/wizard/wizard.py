@@ -5,6 +5,7 @@ Runs on 127.0.0.1:8098, proxied by nginx at /onboarding/api/
 """
 import json
 import os
+import socket
 import time
 import urllib.request
 import urllib.error
@@ -15,6 +16,28 @@ from pathlib import Path
 SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN', '')
 HA_PORT = int(os.environ.get('CN_HA_PORT', '8123'))
 WIZARD_STATE_FILE = '/data/cn_wizard_state.json'
+
+# ─── TCP health check ────────────────────────────────────────────
+
+def _ha_tcp_alive():
+    """Check if HA Core is accepting TCP connections on its port.
+    Works independently of SUPERVISOR_TOKEN — relies on host_network: true."""
+    try:
+        s = socket.create_connection(('127.0.0.1', HA_PORT), timeout=3)
+        s.close()
+        return True
+    except Exception:
+        return False
+
+def _ha_http_alive():
+    """HTTP check via the homeassistant hostname (proper add-on DNS).
+    Any HTTP response — even 401 Unauthorized — means HA Core is listening.
+    Requires homeassistant_api: true in config.yaml."""
+    try:
+        status, _ = ha_core_api('GET', '/')
+        return status > 0
+    except Exception:
+        return False
 
 # ─── Supervisor / HA API helpers ────────────────────────────────
 
@@ -226,15 +249,35 @@ class WizardHandler(BaseHTTPRequestHandler):
     def _do_GET(self, path):
         if path == '/onboarding/api/status':
             state = load_state()
-            # Use Supervisor /core/info — pure Supervisor endpoint, no HA auth needed.
-            # Do NOT use /core/api/... which proxies to HA Core and returns 401.
-            _, info = supervisor('GET', '/core/info')
+
+            # Check 1: TCP connect to 127.0.0.1:HA_PORT (host_network: true required)
+            tcp_alive = _ha_tcp_alive()
+
+            # Check 2: HTTP GET http://homeassistant/api/ (any response = alive)
+            http_alive = _ha_http_alive()
+
+            # Check 3: Supervisor /core/info for HA version string
+            sup_status, info = supervisor('GET', '/core/info')
             version = (info.get('data') or {}).get('version', 'unknown')
+
+            # HA is online if ANY check succeeds
+            ha_online = tcp_alive or http_alive or (version != 'unknown')
+
+            diag = {
+                'tcp': tcp_alive,
+                'http': http_alive,
+                'sup': sup_status,
+                'ver': version,
+                'token': bool(SUPERVISOR_TOKEN),
+            }
+            print(f'[CN Wizard] /status: {diag}', flush=True)
+
             self.send_json(200, {
                 'ha_version': version,
-                'ha_online': version != 'unknown',
+                'ha_online': ha_online,
                 'supervisor_token': bool(SUPERVISOR_TOKEN),
                 'wizard_state': state,
+                '_diag': diag,
             })
 
         elif path.startswith('/onboarding/api/addon/'):
