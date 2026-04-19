@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect Nest — Pre-Config</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&family=Baumans&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent:      #15C7B4;
+    --accent-dim:  #0f9284;
+    --accent-glow: rgba(21,199,180,0.18);
+    --bg:          #1e2329;
+    --bg2:         #171b20;
+    --card:        rgba(22,26,30,0.92);
+    --card-border: rgba(95,117,117,0.35);
+    --text:        #eef2f6;
+    --text-sec:    #bac0c6;
+    --text-dim:    #80828a;
+    --border:      rgba(95,117,117,0.45);
+    --radius:      14px;
+    --error:       #e05c5c;
+    --warn:        #d4a843;
+  }
+
+  body {
+    font-family: 'Raleway', sans-serif;
+    background: var(--bg2);
+    background-image:
+      radial-gradient(ellipse at 8% 12%,  rgba(21,199,180,0.11) 0%, transparent 52%),
+      radial-gradient(ellipse at 92% 88%, rgba(21,199,180,0.07) 0%, transparent 48%),
+      radial-gradient(ellipse at 55% 0%,  rgba(21,199,180,0.04) 0%, transparent 60%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 5rem;
+  }
+
+  .wrapper { max-width: 720px; margin: 0 auto; }
+
+  /* ── Settings panel ── */
+  .settings-panel {
+    background: rgba(14,18,22,0.97);
+    border: 1px solid rgba(21,199,180,0.25);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.1rem;
+    display: none;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .settings-panel.open { display: block; animation: fadeIn 0.2s ease; }
+  .settings-panel-title {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--accent); margin-bottom: 0.85rem;
+  }
+  .settings-panel label {
+    font-size: 0.73rem; font-weight: 600; color: var(--text-sec);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    display: block; margin-bottom: 0.38rem;
+  }
+  .settings-panel input {
+    width: 100%; padding: 0.62rem 0.85rem;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: monospace; font-size: 0.85rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .settings-panel input:focus { border-color: var(--accent); }
+  .settings-hint {
+    font-size: 0.71rem; color: var(--text-dim);
+    margin-top: 0.5rem; line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .cn-header {
+    display: flex; align-items: center; gap: 1.1rem;
+    margin-bottom: 2rem; padding: 0 0.1rem;
+  }
+  .cn-logo-wrap {
+    width: 54px; height: 54px; flex-shrink: 0;
+    filter: drop-shadow(0 0 14px rgba(21,199,180,0.55));
+  }
+  .cn-title h1 {
+    font-family: 'Baumans', sans-serif;
+    font-size: 1.95rem; color: var(--accent);
+    letter-spacing: 0.06em; line-height: 1;
+  }
+  .cn-title p {
+    font-size: 0.84rem; color: var(--text-sec);
+    font-weight: 300; margin-top: 0.22rem;
+  }
+  .settings-gear {
+    margin-left: auto; flex-shrink: 0;
+    background: transparent; border: 1px solid var(--card-border);
+    border-radius: 8px; color: var(--text-dim);
+    padding: 0.48rem 0.85rem; cursor: pointer;
+    font-size: 0.92rem; font-family: 'Raleway', sans-serif;
+    font-weight: 600; transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .settings-gear:hover { border-color: var(--accent); color: var(--accent); }
+  .settings-gear .gear-txt { font-size: 0.73rem; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 1.7rem 1.75rem;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 4px 28px rgba(0,0,0,0.35);
+  }
+
+  /* ── Section header ── */
+  .section-hdr {
+    display: flex; align-items: center; gap: 0.65rem;
+    margin-bottom: 1.35rem; padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .section-icon { font-size: 1.05rem; }
+  .section-title {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--accent);
+  }
+  .section-badge {
+    margin-left: auto; font-size: 0.59rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.16rem 0.55rem; border-radius: 8px;
+  }
+  .badge-req { background: rgba(21,199,180,0.15); color: var(--accent); }
+  .badge-opt { background: rgba(212,168,67,0.15);  color: var(--warn); }
+
+  /* ── Field grid ── */
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 540px) { .field-grid { grid-template-columns: 1fr; } }
+  .field-full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+  label.fn {
+    font-size: 0.71rem; font-weight: 600; color: var(--text-sec);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .req-star { color: var(--error); margin-left: 2px; }
+  .opt-tag {
+    font-size: 0.58rem; background: rgba(212,168,67,0.15);
+    color: var(--warn); padding: 0.1rem 0.38rem;
+    border-radius: 4px; margin-left: 4px;
+    text-transform: none; letter-spacing: 0; font-weight: 700;
+  }
+
+  input[type=text], input[type=number], select {
+    padding: 0.65rem 0.85rem;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: 'Raleway', sans-serif; font-size: 0.92rem;
+    outline: none; transition: border-color 0.2s; width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(21,199,180,0.08); }
+  input::placeholder { color: var(--text-dim); }
+  select option { background: #1e2329; }
+
+  .hint { font-size: 0.71rem; color: var(--text-dim); line-height: 1.5; }
+
+  /* ── Password row ── */
+  .pw-row { display: flex; gap: 0.5rem; }
+  .pw-row input {
+    flex: 1; font-family: monospace;
+    background: rgba(21,199,180,0.05);
+    border-color: rgba(21,199,180,0.28);
+  }
+  .btn-gen {
+    padding: 0.65rem 1.05rem;
+    background: var(--accent); color: #0b1210;
+    border: none; border-radius: 8px;
+    font-family: 'Raleway', sans-serif; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: opacity 0.2s;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .btn-gen:hover { opacity: 0.88; }
+
+  /* ── Toggle switch ── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.88rem 0; border-bottom: 1px solid rgba(95,117,117,0.2); gap: 1rem;
+  }
+  .toggle-row:last-of-type { border-bottom: none; padding-bottom: 0; }
+  .toggle-info { flex: 1; }
+  .toggle-name { font-weight: 600; font-size: 0.9rem; }
+  .toggle-desc { font-size: 0.76rem; color: var(--text-sec); margin-top: 0.2rem; line-height: 1.45; }
+
+  .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; background: rgba(80,90,100,0.45);
+    border-radius: 24px; cursor: pointer; transition: background 0.2s;
+  }
+  .slider::before {
+    content: ""; position: absolute;
+    height: 18px; width: 18px; left: 3px; bottom: 3px;
+    background: #c8cfd6; border-radius: 50%; transition: transform 0.22s;
+  }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider::before { background: #0b1210; transform: translateX(20px); }
+
+  /* ── Backup options sub-section ── */
+  .options-sub {
+    margin-top: 1.2rem; padding-top: 1.2rem;
+    border-top: 1px solid var(--card-border);
+  }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--card-border); margin: 1.1rem 0; }
+
+  /* ── Generate button ── */
+  .btn-generate {
+    display: flex; align-items: center; justify-content: center; gap: 0.65rem;
+    width: 100%; padding: 1.05rem;
+    background: var(--accent); color: #0b1210;
+    border: none; border-radius: var(--radius);
+    font-family: 'Raleway', sans-serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; margin-bottom: 1.5rem;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 0 28px rgba(21,199,180,0.28), 0 4px 12px rgba(0,0,0,0.3);
+    letter-spacing: 0.02em;
+  }
+  .btn-generate:hover  { opacity: 0.9; }
+  .btn-generate:active { transform: scale(0.99); }
+
+  /* ── Output panel ── */
+  #output {
+    display: none;
+    background: rgba(8,11,14,0.97);
+    border: 1px solid rgba(21,199,180,0.28);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 0 48px rgba(21,199,180,0.08), 0 8px 32px rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .out-header {
+    display: flex; align-items: flex-start; gap: 1rem;
+    margin-bottom: 1.2rem; padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(21,199,180,0.18);
+  }
+  .out-check { font-size: 2.2rem; line-height: 1; margin-top: 0.1rem; }
+  .out-header h2 {
+    font-family: 'Baumans', sans-serif;
+    font-size: 1.4rem; color: var(--accent); line-height: 1;
+  }
+  .out-header p { font-size: 0.82rem; color: var(--text-sec); margin-top: 0.3rem; font-weight: 300; }
+
+  .out-section-label {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--accent);
+    margin: 1.1rem 0 0.55rem;
+  }
+
+  .out-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0; border-bottom: 1px solid rgba(95,117,117,0.18);
+    font-size: 0.86rem; gap: 1rem;
+  }
+  .out-row:last-child { border-bottom: none; }
+  .out-key  { color: var(--text-sec); flex-shrink: 0; min-width: 145px; }
+  .out-val  { color: var(--text); word-break: break-all; text-align: right; }
+  .out-val.mono { font-family: monospace; color: #9ee8e0; }
+
+  .url-label { font-size: 0.7rem; color: var(--text-dim); margin: 1.35rem 0 0.45rem; }
+  .url-box {
+    background: rgba(21,199,180,0.06);
+    border: 1px solid rgba(21,199,180,0.28);
+    border-radius: 8px; padding: 0.85rem 1rem;
+    font-family: monospace; font-size: 0.8rem;
+    word-break: break-all; color: #9ee8e0; line-height: 1.55;
+  }
+
+  /* ── Output action buttons ── */
+  .btn-row {
+    display: flex; gap: 0.55rem; flex-wrap: wrap;
+    margin-top: 1.1rem; align-items: center;
+  }
+  .btn-out {
+    padding: 0.58rem 0.95rem; border: none; border-radius: 8px;
+    font-family: 'Raleway', sans-serif; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .btn-out:hover:not(:disabled) { opacity: 0.84; }
+  .btn-out:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-copy  { background: var(--accent); color: #0b1210; }
+  .btn-dl    { background: rgba(95,117,117,0.28); color: var(--text); border: 1px solid var(--border); }
+  .btn-email { background: #2b5fd9; color: #fff; }
+  .btn-qr    { background: rgba(100,65,170,0.65); color: #fff; border: 1px solid rgba(140,90,220,0.4); }
+
+  .saved-badge {
+    display: none; font-size: 0.74rem; font-weight: 700;
+    padding: 0.28rem 0.7rem; border-radius: 10px;
+    align-items: center; gap: 0.25rem;
+  }
+  .badge-copied  { background: rgba(21,199,180,0.18); color: var(--accent); }
+  .badge-emailed { background: rgba(43,95,217,0.22);  color: #7fa5ff; }
+
+  /* ── QR ── */
+  #qr-container { text-align: center; margin-top: 1.1rem; }
+  #qr-container p { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.65rem; }
+  #qr-container canvas { border-radius: 10px; background: #fff; padding: 10px;
+    box-shadow: 0 0 24px rgba(21,199,180,0.15); }
+
+  /* ── Footer note ── */
+  .footer-note {
+    font-size: 0.72rem; color: var(--text-dim); margin-top: 1.1rem;
+    padding-top: 0.9rem; border-top: 1px solid rgba(95,117,117,0.2);
+    line-height: 1.65;
+  }
+  .footer-note strong { color: var(--warn); }
+
+  /* ── Animations ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(7px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Settings Panel (hidden until gear clicked) -->
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-panel-title">⚙ Team Settings</div>
+    <label for="gas_endpoint">Google Apps Script Endpoint URL</label>
+    <input type="text" id="gas_endpoint"
+           placeholder="https://script.google.com/macros/s/.../exec"
+           oninput="saveGASUrl()" autocomplete="off" spellcheck="false">
+    <p class="settings-hint">
+      From your team password manager. Required for the 📧 Email JSON button.<br>
+      Saved in browser localStorage — only needs to be entered once per device.
+    </p>
+  </div>
+
+  <!-- Header -->
+  <header class="cn-header">
+    <div class="cn-logo-wrap">
+      <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="cnLogoGrad" cx="38%" cy="32%" r="72%">
+            <stop offset="0%"   stop-color="#15C7B4"/>
+            <stop offset="100%" stop-color="#096b60"/>
+          </radialGradient>
+        </defs>
+        <circle cx="26" cy="26" r="26" fill="url(#cnLogoGrad)"/>
+        <polygon points="29,7 17,27 25,27 23,45 35,25 27,25" fill="white" opacity="0.95"/>
+      </svg>
+    </div>
+    <div class="cn-title">
+      <h1>Connect Nest</h1>
+      <p>Pre-Config Form — Customer Setup</p>
+    </div>
+    <button class="settings-gear" onclick="toggleSettings()" title="Team Settings">
+      ⚙ <span class="gear-txt">Settings</span>
+    </button>
+  </header>
+
+  <!-- Job Details -->
+  <div class="card">
+    <div class="section-hdr">
+      <span class="section-icon">📋</span>
+      <span class="section-title">Job Details</span>
+      <span class="section-badge badge-req">Required</span>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="fn">Customer Name <span class="req-star">*</span></label>
+        <input type="text" id="customer_name" placeholder="e.g. Smith Family">
+      </div>
+      <div class="field">
+        <label class="fn">Install Date <span class="req-star">*</span></label>
+        <input type="text" id="install_date" placeholder="DD/MM/YYYY">
+      </div>
+      <div class="field field-full">
+        <label class="fn">Site Address <span class="opt-tag">Optional</span></label>
+        <input type="text" id="site_address" placeholder="e.g. 12 Example St, Melbourne VIC 3000">
+      </div>
+    </div>
+  </div>
+
+  <!-- Network Details -->
+  <div class="card">
+    <div class="section-hdr">
+      <span class="section-icon">🌐</span>
+      <span class="section-title">Network Details</span>
+      <span class="section-badge badge-req">Required</span>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="fn">CN Hub Static IP <span class="req-star">*</span></label>
+        <input type="text" id="hub_static_ip" placeholder="e.g. 192.168.1.50">
+        <span class="hint">Use the IP the HA VM currently has (check the customer router's DHCP table) — we'll lock it as static after</span>
+      </div>
+      <div class="field">
+        <label class="fn">Router Gateway IP <span class="req-star">*</span></label>
+        <input type="text" id="gateway_ip" placeholder="e.g. 192.168.1.1">
+      </div>
+      <div class="field">
+        <label class="fn">Subnet Mask</label>
+        <input type="text" id="subnet_mask" value="255.255.255.0" placeholder="255.255.255.0">
+      </div>
+      <div class="field">
+        <label class="fn">DNS Server 1</label>
+        <input type="text" id="dns1" value="8.8.8.8" placeholder="8.8.8.8">
+      </div>
+      <div class="field">
+        <label class="fn">DNS Server 2 <span class="opt-tag">Optional</span></label>
+        <input type="text" id="dns2" value="8.8.4.4" placeholder="8.8.4.4">
+      </div>
+      <div class="field">
+        <label class="fn">Home Location <span class="req-star">*</span></label>
+        <input type="text" id="location_city" placeholder="e.g. Melbourne, Victoria">
+        <span class="hint">Used for HA sunrise / sunset automations</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zigbee Coordinator -->
+  <div class="card">
+    <div class="section-hdr">
+      <span class="section-icon">📡</span>
+      <span class="section-title">Zigbee Coordinator — SMLIGHT SLZB-06</span>
+      <span class="section-badge badge-req">Required</span>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="fn">Coordinator IP <span class="req-star">*</span></label>
+        <input type="text" id="coordinator_ip" placeholder="e.g. 192.168.1.75">
+        <span class="hint">Check router DHCP table or visit slzb-06.local</span>
+      </div>
+      <div class="field">
+        <label class="fn">TCP Port <span class="req-star">*</span></label>
+        <input type="number" id="coordinator_port" value="6638" placeholder="6638">
+        <span class="hint">Default 6638 — only change if reconfigured</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MQTT Credentials -->
+  <div class="card">
+    <div class="section-hdr">
+      <span class="section-icon">🔐</span>
+      <span class="section-title">MQTT Broker Credentials</span>
+      <span class="section-badge badge-req">Required</span>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="fn">MQTT Username <span class="req-star">*</span></label>
+        <input type="text" id="mqtt_username" value="cn_mqtt" placeholder="cn_mqtt">
+      </div>
+      <div class="field">
+        <label class="fn">MQTT Password <span class="req-star">*</span></label>
+        <div class="pw-row">
+          <input type="text" id="mqtt_password" placeholder="Click Generate →" readonly>
+          <button class="btn-gen" onclick="generatePassword()">⚡ Generate</button>
+        </div>
+        <span class="hint">Cryptographically random — stored in the output JSON</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional Services -->
+  <div class="card">
+    <div class="section-hdr">
+      <span class="section-icon">🧩</span>
+      <span class="section-title">Optional Services</span>
+      <span class="section-badge badge-opt">Configurable</span>
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">Studio Code Server</div>
+        <div class="toggle-desc">Browser-based config file editor — recommended for all installs</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="opt_studio_code" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">HACS <span class="opt-tag">Community Store</span></div>
+        <div class="toggle-desc">Home Assistant Community Store — required for OneDrive Backup add-on</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="opt_hacs" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">Tailscale VPN</div>
+        <div class="toggle-desc">Secure remote access without port forwarding — strongly recommended</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="opt_tailscale" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">OneDrive Backup</div>
+        <div class="toggle-desc">Automatic cloud backup to Microsoft OneDrive (requires HACS)</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="opt_onedrive"><span class="slider"></span></label>
+    </div>
+
+    <div class="options-sub">
+      <div class="field-grid">
+        <div class="field">
+          <label class="fn">Backup Schedule</label>
+          <select id="backup_schedule">
+            <option value="daily" selected>Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="never">Never (manual only)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="fn">Backup Copies to Keep</label>
+          <input type="number" id="backup_copies" value="3" min="1" max="10">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate button -->
+  <button class="btn-generate" onclick="generateConfig()">
+    ⚡ Generate Wizard Config URL + JSON
+  </button>
+
+  <!-- Output panel -->
+  <div id="output">
+    <div class="out-header">
+      <div class="out-check">✅</div>
+      <div>
+        <h2>Config Generated</h2>
+        <p id="out-customer-label">Ready to pre-fill the CN Setup Wizard</p>
+      </div>
+    </div>
+
+    <div class="out-section-label">Config Summary</div>
+    <div id="out-details"></div>
+
+    <div class="url-label">Wizard URL — open at customer site, or scan QR code below:</div>
+    <div class="url-box" id="out-url"></div>
+
+    <div class="btn-row">
+      <button class="btn-out btn-copy"  onclick="copyURL()">📋 Copy URL</button>
+      <button class="btn-out btn-dl"    onclick="downloadJSON()">⬇ Download JSON</button>
+      <button class="btn-out btn-email" onclick="emailConfig()" id="btn-email">📧 Email JSON</button>
+      <button class="btn-out btn-qr"    onclick="toggleQR()">📷 Show QR</button>
+      <span class="saved-badge badge-copied"  id="copied-badge">✓ Copied!</span>
+      <span class="saved-badge badge-emailed" id="emailed-badge">✓ Sent!</span>
+    </div>
+
+    <div id="qr-container"></div>
+
+    <div class="footer-note">
+      <strong>⚠ Security note:</strong> This config contains the MQTT password — store the JSON file securely and do not share publicly.<br>
+      At the customer site: open the Wizard URL (or scan QR) on any browser that can reach the CN Hub on port 7080.
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- QR code library (CDN — cached after first load) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+// ─── Settings panel toggle ────────────────────────────────────────────────
+function toggleSettings() {
+  document.getElementById('settings-panel').classList.toggle('open');
+}
+
+// ─── Password generator ───────────────────────────────────────────────────
+function generatePassword() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+  const arr   = new Uint8Array(18);
+  crypto.getRandomValues(arr);
+  const pwd = Array.from(arr, b => chars[b % chars.length]).join('');
+  document.getElementById('mqtt_password').value = pwd;
+}
+
+// ─── Build config object ──────────────────────────────────────────────────
+function buildConfig() {
+  const v = id => document.getElementById(id).value.trim();
+  const b = id => document.getElementById(id).checked;
+  return {
+    _meta: {
+      version:       '1.0',
+      generated_at:  new Date().toISOString(),
+      customer_name: v('customer_name'),
+      install_date:  v('install_date'),
+      site_address:  v('site_address'),
+    },
+    network: {
+      hub_static_ip: v('hub_static_ip'),
+      gateway:       v('gateway_ip'),
+      subnet_mask:   v('subnet_mask') || '255.255.255.0',
+      dns1:          v('dns1')        || '8.8.8.8',
+      dns2:          v('dns2')        || '8.8.4.4',
+      location_city: v('location_city'),
+    },
+    zigbee: {
+      coordinator_ip:   v('coordinator_ip'),
+      coordinator_port: parseInt(v('coordinator_port')) || 6638,
+      adapter:          'ember',
+    },
+    mqtt: {
+      username: v('mqtt_username') || 'cn_mqtt',
+      password: v('mqtt_password'),
+    },
+    options: {
+      install_studio_code: b('opt_studio_code'),
+      install_hacs:        b('opt_hacs'),
+      install_tailscale:   b('opt_tailscale'),
+      install_onedrive:    b('opt_onedrive'),
+      backup_schedule:     v('backup_schedule'),
+      backup_copies:       parseInt(v('backup_copies')) || 3,
+    },
+  };
+}
+
+// ─── Validate required fields ─────────────────────────────────────────────
+function validate(cfg) {
+  return [
+    [cfg._meta.customer_name,    'Customer Name'],
+    [cfg.network.hub_static_ip,  'CN Hub Static IP'],
+    [cfg.network.gateway,        'Router Gateway IP'],
+    [cfg.network.location_city,  'Home Location'],
+    [cfg.zigbee.coordinator_ip,  'Zigbee Coordinator IP'],
+    [cfg.mqtt.password,          'MQTT Password (click Generate)'],
+  ].filter(([v]) => !v).map(([,n]) => n);
+}
+
+// ─── Main generate ────────────────────────────────────────────────────────
+let _cfg = null, _url = null;
+
+function generateConfig() {
+  const cfg     = buildConfig();
+  const missing = validate(cfg);
+  if (missing.length) {
+    alert('Please fill in the following required fields:\n\n• ' + missing.join('\n• '));
+    return;
+  }
+  _cfg = cfg;
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  _url = `http://${cfg.network.hub_static_ip}:7080/onboarding/?config=${b64}`;
+
+  document.getElementById('out-customer-label').textContent =
+    cfg._meta.customer_name + (cfg._meta.install_date ? ' — ' + cfg._meta.install_date : '');
+
+  const rows = [
+    { k: 'Customer',        v: cfg._meta.customer_name,   mono: false },
+    { k: 'Install Date',    v: cfg._meta.install_date || '—', mono: false },
+    { k: 'Site Address',    v: cfg._meta.site_address || '—', mono: false },
+    { k: 'Hub Static IP',   v: cfg.network.hub_static_ip, mono: true  },
+    { k: 'Gateway',         v: cfg.network.gateway,        mono: true  },
+    { k: 'Location',        v: cfg.network.location_city,  mono: false },
+    { k: 'Zigbee',          v: `${cfg.zigbee.coordinator_ip}:${cfg.zigbee.coordinator_port}`, mono: true },
+    { k: 'MQTT Username',   v: cfg.mqtt.username,           mono: true  },
+    { k: 'MQTT Password',   v: cfg.mqtt.password,           mono: true  },
+    { k: 'Studio Code',     v: cfg.options.install_studio_code ? '✓ Install' : '✗ Skip', mono: false },
+    { k: 'HACS',            v: cfg.options.install_hacs        ? '✓ Install' : '✗ Skip', mono: false },
+    { k: 'Tailscale',       v: cfg.options.install_tailscale   ? '✓ Install' : '✗ Skip', mono: false },
+    { k: 'OneDrive Backup', v: cfg.options.install_onedrive    ? '✓ Install' : '✗ Skip', mono: false },
+    { k: 'Backup',          v: cfg.options.backup_schedule + ` (keep ${cfg.options.backup_copies})`, mono: false },
+  ];
+
+  document.getElementById('out-details').innerHTML =
+    rows.map(r => `<div class="out-row">
+      <span class="out-key">${r.k}</span>
+      <span class="out-val${r.mono ? ' mono' : ''}">${r.v}</span>
+    </div>`).join('');
+
+  document.getElementById('out-url').textContent = _url;
+  const out = document.getElementById('output');
+  out.style.display = 'block';
+  out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('qr-container').innerHTML = '';
+  _qrVisible = false;
+}
+
+// ─── Copy URL ─────────────────────────────────────────────────────────────
+function copyURL() {
+  if (!_url) return;
+  navigator.clipboard.writeText(_url).then(() => {
+    const b = document.getElementById('copied-badge');
+    b.style.display = 'inline-flex';
+    setTimeout(() => b.style.display = 'none', 2200);
+  });
+}
+
+// ─── Download JSON ────────────────────────────────────────────────────────
+function downloadJSON() {
+  if (!_cfg) return;
+  const name = (_cfg._meta.customer_name || 'customer').replace(/\s+/g, '_');
+  const date = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([JSON.stringify(_cfg, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `CN_Config_${name}_${date}.json`;
+  link.click();
+}
+
+// ─── QR Code ─────────────────────────────────────────────────────────────
+let _qrVisible = false;
+function toggleQR() {
+  const c = document.getElementById('qr-container');
+  if (_qrVisible) { c.innerHTML = ''; _qrVisible = false; return; }
+  if (!_url || typeof QRCode === 'undefined') {
+    c.innerHTML = '<p style="color:var(--error)">QR library not loaded — check internet, or use the URL directly.</p>';
+    return;
+  }
+  c.innerHTML = '<p>Scan at the customer site to open the pre-filled wizard:</p>';
+  new QRCode(c, { text: _url, width: 224, height: 224,
+    colorDark: '#0b1210', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  _qrVisible = true;
+}
+
+// ─── GAS URL: save/load from localStorage ────────────────────────────────
+function saveGASUrl() {
+  const url = document.getElementById('gas_endpoint').value.trim();
+  url ? localStorage.setItem('cn_gas_endpoint', url) : localStorage.removeItem('cn_gas_endpoint');
+}
+
+function loadGASUrl() {
+  const saved = localStorage.getItem('cn_gas_endpoint');
+  if (saved) document.getElementById('gas_endpoint').value = saved;
+}
+
+// ─── Email JSON via GAS ───────────────────────────────────────────────────
+async function emailConfig() {
+  if (!_cfg) return;
+  const gasUrl = document.getElementById('gas_endpoint').value.trim();
+  if (!gasUrl) {
+    alert('Please enter the GAS Endpoint URL in Team Settings.\n\nClick the ⚙ Settings button at the top right, then paste the URL from your team password manager.');
+    document.getElementById('settings-panel').classList.add('open');
+    document.getElementById('gas_endpoint').focus();
+    return;
+  }
+  const btn = document.getElementById('btn-email');
+  btn.textContent = '⏳ Sending...';
+  btn.disabled = true;
+  try {
+    const res    = await fetch(gasUrl, { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'form_config', sent_from: 'cn-preconfig-form.html', config: _cfg }) });
+    const result = await res.json().catch(() => ({}));
+    if (result.ok) {
+      const b = document.getElementById('emailed-badge');
+      b.style.display = 'inline-flex';
+      setTimeout(() => b.style.display = 'none', 3200);
+    } else {
+      alert('GAS error: ' + (result.error || 'Unknown response'));
+    }
+  } catch (err) {
+    alert('Could not reach GAS endpoint.\n• Check the URL in Team Settings is correct\n• Check internet connection\n\n' + err.message);
+  } finally {
+    btn.textContent = '📧 Email JSON';
+    btn.disabled = false;
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+generatePassword();
+loadGASUrl();
+
+// Pre-fill from ?prefill= URL param
+(function() {
+  const cfg64 = new URLSearchParams(window.location.search).get('prefill');
+  if (!cfg64) return;
+  try {
+    const cfg = JSON.parse(decodeURIComponent(escape(atob(cfg64))));
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+    const chk = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.checked = val; };
+    if (cfg._meta)   { set('customer_name', cfg._meta.customer_name); set('install_date', cfg._meta.install_date); set('site_address', cfg._meta.site_address); }
+    if (cfg.network) { set('hub_static_ip', cfg.network.hub_static_ip); set('gateway_ip', cfg.network.gateway); set('subnet_mask', cfg.network.subnet_mask); set('dns1', cfg.network.dns1); set('dns2', cfg.network.dns2); set('location_city', cfg.network.location_city); }
+    if (cfg.zigbee)  { set('coordinator_ip', cfg.zigbee.coordinator_ip); set('coordinator_port', cfg.zigbee.coordinator_port); }
+    if (cfg.mqtt)    { set('mqtt_username', cfg.mqtt.username); set('mqtt_password', cfg.mqtt.password); }
+    if (cfg.options) { chk('opt_studio_code', cfg.options.install_studio_code); chk('opt_hacs', cfg.options.install_hacs); chk('opt_tailscale', cfg.options.install_tailscale); chk('opt_onedrive', cfg.options.install_onedrive); set('backup_schedule', cfg.options.backup_schedule); set('backup_copies', cfg.options.backup_copies); }
+  } catch(e) { console.warn('Could not parse ?prefill param:', e); }
+})();
+</script>
+</body>
+</html>

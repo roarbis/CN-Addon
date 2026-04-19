@@ -175,6 +175,53 @@
 
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
+
+  /* ── Landing step ── */
+  .landing-options { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.25rem 0; }
+  @media (max-width: 520px) { .landing-options { grid-template-columns: 1fr; } }
+  .option-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.2rem;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s; text-align: center; }
+  .option-card:hover { border-color: var(--accent); background: rgba(21,199,180,0.06); }
+  .option-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+  .option-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.35rem; }
+  .option-desc { font-size: 0.8rem; color: var(--text-sec); line-height: 1.5; }
+  .option-badge { display: inline-block; margin-top: 0.5rem; font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.5rem; border-radius: 8px;
+    background: rgba(21,199,180,0.15); color: var(--accent); }
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 1.75rem;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    color: var(--text-sec); font-size: 0.88rem; margin-top: 1rem; }
+  .upload-zone:hover { border-color: var(--accent); background: rgba(21,199,180,0.05); }
+  .upload-zone .uz-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+
+  /* ── Review (config loaded) ── */
+  .review-section { margin-bottom: 1.25rem; }
+  .review-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--accent); margin-bottom: 0.65rem;
+    padding-bottom: 0.3rem; border-bottom: 1px solid rgba(21,199,180,0.3); }
+  .review-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.3rem 0; }
+  .review-key { font-size: 0.82rem; color: var(--text-sec); min-width: 150px; flex-shrink: 0; }
+  .review-val { flex: 1; padding: 0.4rem 0.65rem; background: rgba(22,25,23,0.6);
+    border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+    font-family: 'Raleway', sans-serif; font-size: 0.88rem; outline: none; }
+  .review-val:focus { border-color: var(--accent); }
+  .review-toggle-row { display: flex; align-items: center; justify-content: space-between;
+    padding: 0.45rem 0; border-bottom: 1px solid rgba(95,117,117,0.2); font-size: 0.88rem; }
+  .review-toggle-row:last-child { border-bottom: none; }
+
+  /* ── Summary step ── */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 520px) { .summary-grid { grid-template-columns: 1fr; } }
+  .summary-section { background: rgba(22,25,23,0.5); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.1rem; }
+  .summary-section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--accent); margin-bottom: 0.7rem; }
+  .summary-row { display: flex; justify-content: space-between; padding: 0.28rem 0;
+    font-size: 0.84rem; border-bottom: 1px solid rgba(95,117,117,0.15); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: var(--text-sec); }
+  .summary-val { color: var(--text); font-weight: 600; text-align: right; max-width: 55%; word-break: break-all; }
+  .summary-section-full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
@@ -201,9 +248,10 @@
 <script>
 // ─── State ────────────────────────────────────────────────────────────────────
 const API = '/onboarding/api';
-const STEPS = ['welcome', 'preflight', 'addons', 'restart', 'mqtt', 'zigbee', 'tailscale', 'backup', 'onedrive', 'done'];
+const STEPS = ['landing', 'welcome', 'preflight', 'addons', 'restart', 'mqtt', 'zigbee', 'tailscale', 'backup', 'onedrive', 'summary', 'done'];
 let currentStep = 0;
 let collected = {};   // form values & user choices
+let landingState = 'choice';   // 'choice' | 'reviewing'
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
 async function api(method, path, body) {
@@ -230,13 +278,21 @@ const get = (p) => api('GET', p);
 const post = (p, b) => api('POST', p, b);
 
 // ─── Progress ─────────────────────────────────────────────────────────────────
+function _showProgress(v) {
+  const el = document.querySelector('.progress-track');
+  if (el) el.style.display = v ? '' : 'none';
+}
+
 function updateProgress() {
-  const total = STEPS.length - 1;
-  const pct = Math.round((currentStep / total) * 100);
+  if (STEPS[currentStep] === 'landing') { _showProgress(false); return; }
+  _showProgress(true);
+  // Exclude 'landing' from display count (it's step 0, not a numbered wizard step)
+  const displayStep = currentStep;          // landing=0, welcome=1 → "Step 1"
+  const total = STEPS.length - 2;          // exclude landing; done is the final step
+  const pct = Math.round((currentStep / (STEPS.length - 1)) * 100);
   document.getElementById('progress-bar').style.width = pct + '%';
   document.getElementById('prog-pct').textContent = pct + '%';
-  document.getElementById('prog-label').textContent =
-    `Step ${currentStep + 1} of ${STEPS.length}`;
+  document.getElementById('prog-label').textContent = `Step ${displayStep} of ${total}`;
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
@@ -259,6 +315,7 @@ function next() {
 // ─── Render dispatcher ────────────────────────────────────────────────────────
 function render(step) {
   ({
+    landing:   renderLanding,
     welcome:   renderWelcome,
     preflight: renderPreflight,
     addons:    renderAddons,
@@ -268,6 +325,7 @@ function render(step) {
     tailscale: renderTailscale,
     backup:    renderBackup,
     onedrive:  renderOnedrive,
+    summary:   renderSummary,
     done:      renderDone,
   }[step] || (() => {}))();
 }
@@ -281,6 +339,204 @@ function badge(id, state, label) {
 function checklistToggle(el) {
   const box = el.querySelector('.check-box');
   box.classList.toggle('checked');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 0 — Landing (choose: load config file OR start from scratch)
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderLanding() {
+  updateProgress();  // hides progress bar
+  if (landingState === 'reviewing') { renderLandingReview(); return; }
+
+  document.getElementById('step-container').innerHTML = `
+    <div class="step-content">
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <div style="font-family:'Baumans',sans-serif;font-size:1.7rem;color:var(--accent)">Connect Nest Setup</div>
+        <div style="color:var(--text-sec);font-size:0.88rem;margin-top:0.3rem">How would you like to proceed?</div>
+      </div>
+      <div class="landing-options">
+        <div class="option-card" onclick="showUploadZone()">
+          <div class="option-icon">📂</div>
+          <div class="option-title">Load Config File</div>
+          <div class="option-desc">Load a pre-generated JSON config to pre-fill all wizard steps</div>
+          <div class="option-badge">Recommended</div>
+        </div>
+        <div class="option-card" onclick="startScratch()">
+          <div class="option-icon">🛠</div>
+          <div class="option-title">Start from Scratch</div>
+          <div class="option-desc">Step through the wizard and enter all details manually</div>
+        </div>
+      </div>
+      <div id="upload-zone" style="display:none">
+        <div class="upload-zone"
+          onclick="document.getElementById('cfg-file-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="handleFileDrop(event)">
+          <div class="uz-icon">📄</div>
+          <div>Drop <strong>CN Config JSON</strong> file here</div>
+          <div style="font-size:0.78rem;color:var(--text-dim);margin-top:0.3rem">or click to browse</div>
+        </div>
+        <input type="file" id="cfg-file-input" accept=".json" style="display:none"
+               onchange="handleFileInputChange(this)">
+      </div>
+    </div>`;
+}
+
+function showUploadZone() {
+  const z = document.getElementById('upload-zone');
+  if (z) z.style.display = '';
+}
+
+function startScratch() {
+  _showProgress(true);
+  collected._config_loaded = false;
+  goTo('welcome');
+}
+
+function handleFileDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = '';
+  if (e.dataTransfer.files[0]) processConfigFile(e.dataTransfer.files[0]);
+}
+
+function handleFileInputChange(input) {
+  if (input.files[0]) processConfigFile(input.files[0]);
+}
+
+function processConfigFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const cfg = JSON.parse(ev.target.result);
+      applyConfig(cfg);
+      landingState = 'reviewing';
+      renderLanding();
+    } catch(err) {
+      alert('Could not parse config file.\n' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function applyConfig(cfg) {
+  if (cfg.network) {
+    collected.hub_ip         = cfg.network.hub_static_ip  || '';
+    collected.gateway        = cfg.network.gateway         || '';
+    collected.subnet_mask    = cfg.network.subnet_mask     || '255.255.255.0';
+    collected.dns1           = cfg.network.dns1            || '8.8.8.8';
+    collected.dns2           = cfg.network.dns2            || '8.8.4.4';
+    collected.location_city  = cfg.network.location_city   || '';
+  }
+  if (cfg.zigbee) {
+    collected.z2m_ip         = cfg.zigbee.coordinator_ip   || '';
+    collected.z2m_port       = cfg.zigbee.coordinator_port || 6638;
+    collected.z2m_adapter    = cfg.zigbee.adapter          || 'ember';
+  }
+  if (cfg.mqtt) {
+    collected.mqtt_username  = cfg.mqtt.username           || 'cn_mqtt';
+    collected.mqtt_password  = cfg.mqtt.password           || '';
+  }
+  if (cfg.options) {
+    collected.install_studio_code     = cfg.options.install_studio_code !== false;
+    collected.install_hacs            = cfg.options.install_hacs        !== false;
+    collected.install_tailscale_auto  = !!cfg.options.install_tailscale;
+    collected.install_onedrive        = !!cfg.options.install_onedrive;
+    collected.backup_schedule         = cfg.options.backup_schedule     || 'daily';
+    collected.backup_copies           = cfg.options.backup_copies       || 3;
+  }
+  if (cfg._meta) {
+    collected.customer_name  = cfg._meta.customer_name || '';
+    collected.install_date   = cfg._meta.install_date  || '';
+    collected.site_address   = cfg._meta.site_address  || '';
+  }
+  collected._config_loaded = true;
+}
+
+function renderLandingReview() {
+  const c = collected;
+  document.getElementById('step-container').innerHTML = `
+    <div class="step-content">
+      <div class="step-header">
+        <div class="step-icon">📋</div>
+        <div>
+          <div class="step-title">Review Configuration</div>
+          <div class="step-subtitle">${c.customer_name || 'Customer'}${c.install_date ? ' · ' + c.install_date : ''}</div>
+        </div>
+      </div>
+      <div class="alert alert-success" style="margin-bottom:1.25rem">
+        ✓ Config file loaded — verify the values below, then proceed
+      </div>
+
+      <div class="review-section">
+        <div class="review-section-title">🌐 Network</div>
+        <div class="review-row"><label class="review-key">Hub Static IP</label>
+          <input class="review-val" id="rv-hub-ip" value="${c.hub_ip||''}"></div>
+        <div class="review-row"><label class="review-key">Router Gateway</label>
+          <input class="review-val" id="rv-gateway" value="${c.gateway||''}"></div>
+        <div class="review-row"><label class="review-key">Location / City</label>
+          <input class="review-val" id="rv-city" value="${c.location_city||''}"></div>
+      </div>
+
+      <div class="review-section">
+        <div class="review-section-title">🔌 Zigbee Coordinator</div>
+        <div class="review-row"><label class="review-key">Coordinator IP</label>
+          <input class="review-val" id="rv-z2m-ip" value="${c.z2m_ip||''}"></div>
+        <div class="review-row"><label class="review-key">TCP Port</label>
+          <input class="review-val" id="rv-z2m-port" type="number" value="${c.z2m_port||6638}"></div>
+      </div>
+
+      <div class="review-section">
+        <div class="review-section-title">📡 MQTT Broker</div>
+        <div class="review-row"><label class="review-key">Username</label>
+          <input class="review-val" id="rv-mqtt-user" value="${c.mqtt_username||'cn_mqtt'}"></div>
+        <div class="review-row"><label class="review-key">Password</label>
+          <input class="review-val" id="rv-mqtt-pass" type="password" value="${c.mqtt_password||''}"></div>
+      </div>
+
+      <div class="review-section">
+        <div class="review-section-title">🧩 Install Options</div>
+        <div class="review-toggle-row"><span>Studio Code Server</span>
+          <label class="switch"><input type="checkbox" id="rv-studio" ${c.install_studio_code!==false?'checked':''}><span class="slider"></span></label></div>
+        <div class="review-toggle-row"><span>HACS</span>
+          <label class="switch"><input type="checkbox" id="rv-hacs" ${c.install_hacs!==false?'checked':''}><span class="slider"></span></label></div>
+        <div class="review-toggle-row"><span>Tailscale VPN</span>
+          <label class="switch"><input type="checkbox" id="rv-tailscale" ${c.install_tailscale_auto?'checked':''}><span class="slider"></span></label></div>
+        <div class="review-toggle-row"><span>OneDrive Backup</span>
+          <label class="switch"><input type="checkbox" id="rv-onedrive" ${c.install_onedrive?'checked':''}><span class="slider"></span></label></div>
+        <div class="review-row" style="margin-top:0.5rem"><label class="review-key">Backup Schedule</label>
+          <select class="review-val" id="rv-bk-sched">
+            <option ${(c.backup_schedule||'daily')==='daily'?'selected':''}>daily</option>
+            <option ${c.backup_schedule==='weekly'?'selected':''}>weekly</option>
+            <option ${c.backup_schedule==='never'?'selected':''}>never</option>
+          </select></div>
+        <div class="review-row"><label class="review-key">Backup Copies</label>
+          <input class="review-val" id="rv-bk-copies" type="number" value="${c.backup_copies||3}" min="1" max="10"></div>
+      </div>
+
+      <div class="btn-actions">
+        <button class="btn btn-secondary" onclick="landingState='choice'; renderLanding()">← Change File</button>
+        <button class="btn btn-primary" onclick="confirmReview()">Proceed with Install →</button>
+      </div>
+    </div>`;
+}
+
+function confirmReview() {
+  collected.hub_ip               = document.getElementById('rv-hub-ip').value.trim();
+  collected.gateway              = document.getElementById('rv-gateway').value.trim();
+  collected.location_city        = document.getElementById('rv-city').value.trim();
+  collected.z2m_ip               = document.getElementById('rv-z2m-ip').value.trim();
+  collected.z2m_port             = parseInt(document.getElementById('rv-z2m-port').value) || 6638;
+  collected.mqtt_username        = document.getElementById('rv-mqtt-user').value.trim();
+  collected.mqtt_password        = document.getElementById('rv-mqtt-pass').value;
+  collected.install_studio_code  = document.getElementById('rv-studio').checked;
+  collected.install_hacs         = document.getElementById('rv-hacs').checked;
+  collected.install_tailscale_auto = document.getElementById('rv-tailscale').checked;
+  collected.install_onedrive     = document.getElementById('rv-onedrive').checked;
+  collected.backup_schedule      = document.getElementById('rv-bk-sched').value;
+  collected.backup_copies        = parseInt(document.getElementById('rv-bk-copies').value) || 3;
+  _showProgress(true);
+  goTo('welcome');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -863,35 +1119,113 @@ async function doOnedrive() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STEP 10 — Done
+// STEP 11 — Summary (both Option A and B funnel here before Done)
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderSummary() {
+  const c = collected;
+  const hubIP = c.hub_ip || window.location.hostname;
+
+  const netRows    = [['Hub IP', hubIP], ['Gateway', c.gateway||'—'], ['Location', c.location_city||'—']];
+  const zigRows    = [['Coordinator IP', c.z2m_ip||'—'], ['TCP Port', c.z2m_port||6638], ['Adapter', c.z2m_adapter||'ember']];
+  const mqttRows   = [['Username', c.mqtt_username||'cn_mqtt'], ['Password', '••••••••']];
+  const optRows    = [
+    ['Studio Code',  c.install_studio_code!==false ? '✓ Yes' : '✗ No'],
+    ['HACS',         c.install_hacs!==false         ? '✓ Yes' : '✗ No'],
+    ['Tailscale',    c.tailscale_done                ? '✓ Installed' : '— Skipped'],
+    ['OneDrive',     c.install_onedrive              ? '✓ Yes' : '— No'],
+    ['Backup',       (c.backup_schedule||'daily') + ' · keep ' + (c.backup_copies||3)],
+  ];
+
+  function sectionHTML(title, rows, full) {
+    return `<div class="summary-section${full?' summary-section-full':''}">
+      <div class="summary-section-title">${title}</div>
+      ${rows.map(([k,v])=>`<div class="summary-row"><span class="summary-key">${k}</span><span class="summary-val">${v}</span></div>`).join('')}
+    </div>`;
+  }
+
+  document.getElementById('step-container').innerHTML = `
+    <div class="step-content">
+      <div class="step-header">
+        <div class="step-icon">📋</div>
+        <div>
+          <div class="step-title">Installation Summary</div>
+          <div class="step-subtitle">${c.customer_name||'Review all values before completing'}</div>
+        </div>
+      </div>
+      <div class="summary-grid">
+        ${sectionHTML('🌐 Network', netRows)}
+        ${sectionHTML('📡 MQTT Broker', mqttRows)}
+        ${sectionHTML('🔌 Zigbee Coordinator', zigRows)}
+        ${sectionHTML('🧩 Install Options', optRows)}
+      </div>
+      <div class="btn-actions" style="margin-top:1.25rem">
+        <button class="btn btn-secondary" onclick="exportSummaryJSON()">⬇ Export Config JSON</button>
+        <button class="btn btn-secondary" onclick="goTo('landing')">← Modify / Restart</button>
+        <button class="btn btn-primary" onclick="completeSummary()">Confirm & Complete →</button>
+      </div>
+    </div>`;
+}
+
+function exportSummaryJSON() {
+  const c = collected;
+  const cfg = {
+    _meta: {
+      version: '1.0',
+      exported_at: new Date().toISOString(),
+      customer_name: c.customer_name || '',
+      install_date:  c.install_date  || new Date().toLocaleDateString('en-AU'),
+      site_address:  c.site_address  || '',
+    },
+    network: {
+      hub_static_ip:  c.hub_ip          || window.location.hostname,
+      gateway:        c.gateway         || '',
+      location_city:  c.location_city   || '',
+    },
+    zigbee: {
+      coordinator_ip:   c.z2m_ip       || '',
+      coordinator_port: c.z2m_port      || 6638,
+      adapter:          c.z2m_adapter   || 'ember',
+    },
+    mqtt: {
+      username: c.mqtt_username || 'cn_mqtt',
+      password: c.mqtt_password || '',
+    },
+    options: {
+      install_studio_code: c.install_studio_code !== false,
+      install_hacs:        c.install_hacs        !== false,
+      install_tailscale:   !!c.tailscale_done,
+      install_onedrive:    !!c.install_onedrive,
+      backup_schedule:     c.backup_schedule     || 'daily',
+      backup_copies:       c.backup_copies       || 3,
+    },
+  };
+  const name = (c.customer_name || 'cn').replace(/\s+/g, '_');
+  const date = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `CN_Install_${name}_${date}.json`;
+  a.click();
+}
+
+async function completeSummary() {
+  await post('/step/complete', {}).catch(() => {});
+  goTo('done');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 12 — Done
 // ═══════════════════════════════════════════════════════════════════════════════
 async function renderDone() {
-  await post('/step/complete', {}).catch(() => {});
+  // step/complete was already called by completeSummary() — call again is harmless
   let state = {};
   try { const r = await get('/status'); state = r.wizard_state || {}; } catch(e) {}
 
-  const items = [
-    { key: 'studio_code', label: 'Studio Code Server', optional: false },
-    { key: 'hacs_files',  label: 'HACS',               optional: true  },
-    { key: 'mqtt',        label: 'Mosquitto MQTT',      optional: false },
-    { key: 'zigbee',      label: 'Zigbee2MQTT',         optional: false },
-    { key: 'tailscale',   label: 'Tailscale VPN',       optional: true  },
-    { key: 'backup',      label: 'Backup Schedule',     optional: false },
-    { key: 'onedrive',    label: 'OneDrive Backup',     optional: true  },
-  ].map(({ key, label, optional }) => {
-    const done = !!state[key];
-    const icon = done ? '✓' : (optional ? '—' : '⚠');
-    const cls  = done ? 's-done' : (optional ? 's-skip' : 'status-warning');
-    const note = done ? 'Installed' : (optional ? 'Skipped' : 'Skipped — configure manually');
-    return `<li><span class="${cls}">${icon}</span><span class="s-label">${label}</span><span class="s-note">${note}</span></li>`;
-  }).join('');
-
-  // Build manual follow-up list
   const followUps = [];
-  if (state.hacs_files)  followUps.push('HACS: complete GitHub authorisation in HA → Settings → Integrations → HACS');
-  if (state.tailscale)   followUps.push('Tailscale: open the add-on log and click the authentication URL');
-  if (state.mqtt)        followUps.push('MQTT: accept the integration notification that appeared in HA');
-  if (state.onedrive)    followUps.push('OneDrive: install via HACS → Integrations → "OneDrive Backup" → sign in');
+  if (state.hacs_files) followUps.push('HACS: complete GitHub authorisation — HA → Settings → Integrations → HACS');
+  if (state.tailscale)  followUps.push('Tailscale: open the add-on log, click the authentication URL to link your account');
+  if (state.mqtt)       followUps.push('MQTT: accept the integration notification that appeared in HA');
+  if (state.onedrive)   followUps.push('OneDrive: install via HACS → Integrations → "OneDrive Backup" → sign in');
 
   document.getElementById('step-container').innerHTML = `
     <div class="step-content">
@@ -900,16 +1234,15 @@ async function renderDone() {
         <h2>Setup Complete!</h2>
         <p>Your Connect Nest smart home is ready</p>
       </div>
-      <ul class="summary-list">${items}</ul>
       ${followUps.length ? `
-      <div class="alert alert-warn" style="margin-top:1.25rem">
-        <strong>Complete these manually:</strong>
+      <div class="alert alert-warn">
+        <strong>Action required — complete these manually:</strong>
         <ul class="after-steps" style="margin-top:0.5rem">
           ${followUps.map(f => `<li>${f}</li>`).join('')}
         </ul>
-      </div>` : ''}
+      </div>` : '<div class="alert alert-success">✓ All steps completed — no manual actions required</div>'}
       <div class="alert alert-info" style="margin-top:1rem">
-        ℹ️ To apply the CN dark theme: HA → Profile → Theme → select <strong>cn_dark</strong> → Save
+        ℹ️ Apply the CN dark theme: HA → Profile → Theme → select <strong>cn_dark</strong> → Save
       </div>
       <div class="btn-actions" style="margin-top:1.5rem">
         <a href="/" class="btn btn-primary">Open Connect Nest →</a>
@@ -927,6 +1260,17 @@ function showMsg(el, type, text) {
 }
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
+// Check for ?config= URL param (pre-filled from cn-preconfig-form)
+(function() {
+  try {
+    const cfg64 = new URLSearchParams(window.location.search).get('config');
+    if (cfg64) {
+      const cfg = JSON.parse(decodeURIComponent(escape(atob(cfg64))));
+      applyConfig(cfg);
+      landingState = 'reviewing';
+    }
+  } catch(e) { console.warn('Invalid ?config param:', e); }
+})();
 updateProgress();
 render(STEPS[0]);
 </script>

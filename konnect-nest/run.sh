@@ -377,7 +377,7 @@ if ! command -v python3 &>/dev/null; then
     warn "Add python3 to apk packages in Dockerfile if wizard is needed"
 else
     CN_HA_PORT="${HA_PORT}" \
-        python3 /usr/share/nginx/cn-wizard/wizard.py \
+        python3 /usr/share/nginx/cn-override/wizard/wizard.py \
         >> /proc/1/fd/1 2>&1 &
     WIZARD_PID=$!
 
