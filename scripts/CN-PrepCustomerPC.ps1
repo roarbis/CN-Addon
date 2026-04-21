@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.3"   # increment each time fixes are applied
+$ScriptVersion = "1.4"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -353,17 +353,25 @@ if ($SkipVM) {
 } elseif (-not (Test-Path $haosVdi)) {
     Write-Warn "HAOS VDI not found at $haosVdi — skipping VM creation"
 } else {
-    # Ensure VBoxSVC is running, then probe its COM interface.
-    # After a fresh VirtualBox install the COM server can take 5–30+ seconds
-    # to register — a fixed sleep is not reliable. Instead we use list vms
-    # (needed anyway to detect an existing VM) as the readiness probe and
-    # retry until it succeeds or we hit the 60-second timeout.
+    # Start VBoxSVC in the SAME elevated context as this script.
+    #
+    # Why we always kill+restart (not just "start if missing"):
+    # Windows COM uses session isolation. An elevated process (this script)
+    # cannot connect to a COM server that was started non-elevated — e.g. by
+    # winget's post-install step or by a user double-clicking VirtualBox.exe.
+    # The symptom: REGDB_E_CLASSNOTREG from VBoxManage even though VBoxSVC
+    # appears running in Task Manager and the registry key exists.
+    # Restarting VBoxSVC from THIS elevated session fixes the mismatch.
+    # Safe here because no VMs should be running during D-1 provisioning.
     $vboxSvc = Join-Path (Split-Path $vboxExe) "VBoxSVC.exe"
     $svcProc = Get-Process "VBoxSVC" -ErrorAction SilentlyContinue
     if ($svcProc) {
-        Write-OK "VBoxSVC already running (PID $($svcProc.Id))"
-    } elseif (Test-Path $vboxSvc) {
-        Write-Info "Starting VirtualBox COM server (VBoxSVC)..."
+        Write-Info "Stopping VBoxSVC (PID $($svcProc.Id)) — restarting in elevated context..."
+        Stop-Process $svcProc -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+    }
+    if (Test-Path $vboxSvc) {
+        Write-Info "Starting VBoxSVC in elevated context..."
         Start-Process $vboxSvc -ArgumentList "--auto-shutdown" -WindowStyle Hidden
     }
 
@@ -828,4 +836,5 @@ if (-not $GASEndpoint) {
         Write-Warn "You can email it manually if needed."
     }
 }
+
 
