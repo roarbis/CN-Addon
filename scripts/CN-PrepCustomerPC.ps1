@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.8"   # increment each time fixes are applied
+$ScriptVersion = "1.9"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -140,6 +140,75 @@ powercfg /change hibernate-timeout-ac 0  | Out-Null
 powercfg /change monitor-timeout-ac 0    | Out-Null
 powercfg /hibernate off                  | Out-Null
 Write-OK "Sleep and hibernate disabled (AC power)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 2b — Host Performance Tuning (dedicated single-purpose VM host)
+# ─────────────────────────────────────────────────────────────────────────────
+Write-Info ""
+Write-Info "Applying host performance tuning (dedicated VM host)..."
+
+# Processor scheduling → Background Services
+# Win32PrioritySeparation 24 = short quantum intervals, no foreground boost.
+# VBoxHeadless is a background process — the default "Programs" mode actively
+# starves it whenever any foreground window (e.g. RustDesk session) is active.
+Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl' `
+    -Name 'Win32PrioritySeparation' -Value 24 -Type DWord -Force
+Write-OK "Processor scheduling → Background Services (VM gets equal CPU priority)"
+
+# Visual effects → Best Performance (same as sysdm.cpl → Advanced → Visual Effects)
+$null = New-Item 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects' `
+        -Force -ErrorAction SilentlyContinue
+Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects' `
+    -Name 'VisualFXSetting' -Value 2 -Type DWord -Force
+Set-ItemProperty 'HKCU:\Control Panel\Desktop' -Name 'DragFullWindows' -Value '0' -Force
+Set-ItemProperty 'HKCU:\Control Panel\Desktop' -Name 'MenuShowDelay'   -Value '0' -Force
+Write-OK "Visual effects → Best Performance (animations + compositor overhead disabled)"
+
+# Windows Defender exclusions for VM disk I/O — largest single source of VM latency.
+# Defender scanning VDI disk writes in real-time can halve effective I/O bandwidth.
+try {
+    Add-MpPreference -ExclusionPath      $HAOSDestFolder                                          -ErrorAction Stop
+    Add-MpPreference -ExclusionExtension '.vdi','.vmdk','.vbox'                                   -ErrorAction Stop
+    Add-MpPreference -ExclusionProcess   'VBoxHeadless.exe','VBoxSVC.exe','VBoxManage.exe'        -ErrorAction Stop
+    Write-OK "Defender exclusions added: VM folder + VDI/VMDK extensions + VirtualBox processes"
+} catch {
+    Write-Warn "Could not add Defender exclusions (non-fatal): $_"
+}
+
+# Disable Fast Startup / Hybrid Boot
+# Fast Startup saves a kernel hibernation snapshot on shutdown — VirtualBox drivers
+# are not re-initialised on next boot, which can cause COM registration failures.
+Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power' `
+    -Name 'HiberbootEnabled' -Value 0 -Type DWord -Force
+Write-OK "Fast Startup (Hybrid Boot) disabled — clean driver reload on every boot"
+
+# Disable services that waste resources on a headless VM host.
+# Spooler and Fax are excluded from this list — they are needed for some monitoring
+# agents and leaving them running has negligible cost vs. risk of breakage.
+$svcsToDisable = @(
+    'SysMain',          # Superfetch/Prefetch — wastes RAM prefetching apps never run here
+    'WSearch',          # Windows Search — continuous disk I/O indexing files never searched
+    'DiagTrack',        # Connected User Experiences & Telemetry — background network + I/O
+    'XblAuthManager',   # Xbox Live Auth
+    'XblGameSave',      # Xbox Game Save
+    'XboxNetApiSvc',    # Xbox Network
+    'RetailDemo'        # Retail demo mode service
+)
+foreach ($svcName in $svcsToDisable) {
+    $s = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+    if ($s) {
+        Stop-Service $svcName -Force -ErrorAction SilentlyContinue | Out-Null
+        Set-Service  $svcName -StartupType Disabled -ErrorAction SilentlyContinue
+        Write-OK "Service disabled: $svcName ($($s.DisplayName))"
+    }
+}
+
+# Disable GameDVR / Xbox Game Bar
+# Hooks into every process at startup and adds measurable scheduling latency.
+$null = New-Item 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR' -Force -ErrorAction SilentlyContinue
+Set-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR' `
+    -Name 'AllowGameDVR' -Value 0 -Type DWord -Force
+Write-OK "GameDVR / Xbox Game Bar disabled"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 3 — Power Throttling: Disable for VirtualBox processes
