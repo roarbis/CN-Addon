@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.6"   # increment each time fixes are applied
+$ScriptVersion = "1.7"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -176,38 +176,47 @@ if (Test-Path $vboxExe) {
     Write-OK "VirtualBox already installed: $vboxVer — skipping"
 } else {
     # Always use the official .exe installer downloaded directly from VirtualBox.
-    # winget --silent was dropped because it leaves COM (VBoxC.dll) unregistered
-    # or corrupt — DllRegisterServer fails and VBoxManage gets REGDB_E_CLASSNOTREG
-    # on every call. The direct installer runs MSI properly and registers COM.
+    # winget --silent was dropped because it leaves COM (VBoxC.dll) unregistered.
+    # We resolve the exact filename dynamically from the CDN directory listing so
+    # we never need to hardcode a build number (e.g. 7.2.6r172322 → r172322 part).
     Write-Info "Fetching latest VirtualBox release version..."
-    $vboxVersion  = "7.2.6"   # pinned — update this line to upgrade
-    $vboxBuildNum = "168071"   # must match the version above
+    $vboxUrl       = $null
+    $vboxInstaller = $null
+    $vboxVersion   = $null
     try {
-        # Try to detect a newer release automatically
-        $apiUrl  = "https://download.virtualbox.org/virtualbox/LATEST-STABLE.TXT"
-        $fetched = (Invoke-WebRequest $apiUrl -UseBasicParsing -TimeoutSec 10).Content.Trim()
-        if ($fetched -match '^\d+\.\d+\.\d+$') {
-            Write-Info "Latest stable release from VirtualBox CDN: $fetched"
-            # Only use fetched version if we also know the build number — otherwise
-            # fall back to pinned so the URL is valid. Build nums aren't in the API.
-            # To use a newer version: update $vboxVersion + $vboxBuildNum above.
-        }
-    } catch { Write-Info "Could not reach VirtualBox CDN — using pinned version $vboxVersion" }
+        $cdnBase    = "https://download.virtualbox.org/virtualbox"
+        $vboxVersion = (Invoke-WebRequest "$cdnBase/LATEST-STABLE.TXT" `
+                            -UseBasicParsing -TimeoutSec 10).Content.Trim()
+        Write-Info "Latest stable release from VirtualBox CDN: $vboxVersion"
 
-    $vboxUrl       = "https://download.virtualbox.org/virtualbox/$vboxVersion/VirtualBox-$vboxVersion-$vboxBuildNum-Win.exe"
-    $vboxInstaller = "$HAOSDestFolder\VirtualBox-$vboxVersion-installer.exe"
+        # Parse the CDN directory listing for that version to get the exact filename.
+        # This avoids hardcoding build numbers (the rNNNNNN suffix changes each release).
+        $dirHtml = (Invoke-WebRequest "$cdnBase/$vboxVersion/" `
+                        -UseBasicParsing -TimeoutSec 15).Content
+        $winExe  = [regex]::Match($dirHtml, "VirtualBox-$([regex]::Escape($vboxVersion))-\d+-Win\.exe").Value
+        if (-not $winExe) { throw "Could not find Win installer filename in CDN directory for $vboxVersion" }
 
-    Write-Info "Downloading VirtualBox $vboxVersion from virtualbox.org..."
-    Write-Info "URL: $vboxUrl"
-    try {
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile($vboxUrl, $vboxInstaller)
-        Write-OK "Download complete: $vboxInstaller"
+        $vboxUrl       = "$cdnBase/$vboxVersion/$winExe"
+        $vboxInstaller = "$HAOSDestFolder\$winExe"
+        Write-Info "Installer : $winExe"
+        Write-Info "URL       : $vboxUrl"
     } catch {
-        Write-Fail "Download failed: $_"
+        Write-Fail "Could not resolve VirtualBox download URL: $_"
         Write-Warn "Manual download: https://www.virtualbox.org/wiki/Downloads"
-        Write-Warn "Place the installer at $vboxInstaller and re-run."
-        $vboxInstaller = $null
+        Write-Warn "Place VirtualBox-<ver>-Win.exe in $HAOSDestFolder and re-run."
+    }
+
+    if ($vboxUrl -and $vboxInstaller) {
+        Write-Info "Downloading VirtualBox $vboxVersion from virtualbox.org..."
+        try {
+            $wc = New-Object System.Net.WebClient
+            $wc.DownloadFile($vboxUrl, $vboxInstaller)
+            Write-OK "Download complete: $vboxInstaller"
+        } catch {
+            Write-Fail "Download failed: $_"
+            Write-Warn "Manual download: https://www.virtualbox.org/wiki/Downloads"
+            $vboxInstaller = $null
+        }
     }
 
     if ($vboxInstaller -and (Test-Path $vboxInstaller)) {
@@ -868,6 +877,7 @@ if (-not $GASEndpoint) {
         Write-Warn "You can email it manually if needed."
     }
 }
+
 
 
 
