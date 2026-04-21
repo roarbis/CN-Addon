@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.4"   # increment each time fixes are applied
+$ScriptVersion = "1.5"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -226,6 +226,22 @@ if (Test-Path $vboxExe) {
             powercfg /powerthrottling disable /path $path 2>&1 | Out-Null
         }
         Write-OK "Power throttling exceptions re-applied post-install"
+    }
+}
+
+# Re-register VirtualBox COM objects (VBoxC.dll) every run.
+# Silent and winget installs sometimes leave COM CLSID entries corrupt or
+# missing — especially after repeated install/uninstall cycles. regsvr32
+# re-writes all CLSID → LocalServer32 entries in HKLM so both elevated
+# and non-elevated processes can reach VBoxSVC via COM.
+$vboxCom = "C:\Program Files\Oracle\VirtualBox\VBoxC.dll"
+if (Test-Path $vboxCom) {
+    Write-Info "Re-registering VirtualBox COM objects (VBoxC.dll)..."
+    $regOut = & regsvr32 /s $vboxCom 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-OK "VBoxC.dll COM registration refreshed"
+    } else {
+        Write-Warn "regsvr32 returned exit $LASTEXITCODE — COM may still be usable, continuing"
     }
 }
 
@@ -836,5 +852,6 @@ if (-not $GASEndpoint) {
         Write-Warn "You can email it manually if needed."
     }
 }
+
 
 
