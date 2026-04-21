@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.5"   # increment each time fixes are applied
+$ScriptVersion = "1.6"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -175,40 +175,56 @@ if (Test-Path $vboxExe) {
     $vboxVer = & $vboxExe --version 2>&1
     Write-OK "VirtualBox already installed: $vboxVer — skipping"
 } else {
-    # Prefer winget (Windows 10 1809+ ships with it)
-    $winget = Get-Command winget -ErrorAction SilentlyContinue
-    if ($winget) {
-        Write-Info "Using winget to install VirtualBox..."
-        winget install -e --id Oracle.VirtualBox --silent --accept-package-agreements --accept-source-agreements
-        if ($LASTEXITCODE -eq 0) {
-            Write-OK "VirtualBox installed via winget"
-        } else {
-            Write-Fail "winget install failed (exit $LASTEXITCODE). Trying direct download..."
-            $winget = $null   # fall through to direct download
+    # Always use the official .exe installer downloaded directly from VirtualBox.
+    # winget --silent was dropped because it leaves COM (VBoxC.dll) unregistered
+    # or corrupt — DllRegisterServer fails and VBoxManage gets REGDB_E_CLASSNOTREG
+    # on every call. The direct installer runs MSI properly and registers COM.
+    Write-Info "Fetching latest VirtualBox release version..."
+    $vboxVersion  = "7.2.6"   # pinned — update this line to upgrade
+    $vboxBuildNum = "168071"   # must match the version above
+    try {
+        # Try to detect a newer release automatically
+        $apiUrl  = "https://download.virtualbox.org/virtualbox/LATEST-STABLE.TXT"
+        $fetched = (Invoke-WebRequest $apiUrl -UseBasicParsing -TimeoutSec 10).Content.Trim()
+        if ($fetched -match '^\d+\.\d+\.\d+$') {
+            Write-Info "Latest stable release from VirtualBox CDN: $fetched"
+            # Only use fetched version if we also know the build number — otherwise
+            # fall back to pinned so the URL is valid. Build nums aren't in the API.
+            # To use a newer version: update $vboxVersion + $vboxBuildNum above.
         }
+    } catch { Write-Info "Could not reach VirtualBox CDN — using pinned version $vboxVersion" }
+
+    $vboxUrl       = "https://download.virtualbox.org/virtualbox/$vboxVersion/VirtualBox-$vboxVersion-$vboxBuildNum-Win.exe"
+    $vboxInstaller = "$HAOSDestFolder\VirtualBox-$vboxVersion-installer.exe"
+
+    Write-Info "Downloading VirtualBox $vboxVersion from virtualbox.org..."
+    Write-Info "URL: $vboxUrl"
+    try {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($vboxUrl, $vboxInstaller)
+        Write-OK "Download complete: $vboxInstaller"
+    } catch {
+        Write-Fail "Download failed: $_"
+        Write-Warn "Manual download: https://www.virtualbox.org/wiki/Downloads"
+        Write-Warn "Place the installer at $vboxInstaller and re-run."
+        $vboxInstaller = $null
     }
 
-    if (-not $winget) {
-        # Direct download — get latest version from VirtualBox API
-        Write-Info "Fetching latest VirtualBox version..."
-        try {
-            $latestPage = Invoke-WebRequest "https://www.virtualbox.org/wiki/Downloads" -UseBasicParsing
-            $vboxVersion = ($latestPage.Content | Select-String -Pattern 'VirtualBox-([\d.]+)-' |
-                           Select-Object -First 1).Matches.Groups[1].Value
-            if (-not $vboxVersion) { $vboxVersion = "7.0.18" }  # fallback
-        } catch { $vboxVersion = "7.0.18" }
-
-        Write-Info "Downloading VirtualBox $vboxVersion..."
-        $vboxBuildNum = "162988"   # update if pinning a specific build
-        $vboxUrl = "https://download.virtualbox.org/virtualbox/$vboxVersion/VirtualBox-$vboxVersion-$vboxBuildNum-Win.exe"
-        $vboxInstaller = "$HAOSDestFolder\VirtualBox-installer.exe"
-
-        Invoke-WebRequest -Uri $vboxUrl -OutFile $vboxInstaller -UseBasicParsing
-        Write-Info "Running VirtualBox installer silently..."
-        Start-Process -Wait -FilePath $vboxInstaller `
-            -ArgumentList "--silent", "--msiparams", "REBOOT=ReallySuppress"
+    if ($vboxInstaller -and (Test-Path $vboxInstaller)) {
+        Write-Info "Running VirtualBox installer (this takes ~2 minutes)..."
+        # --silent + REBOOT=ReallySuppress: quiet install, no reboot prompt
+        # Does NOT suppress COM registration — that's the key advantage over winget
+        $vbProc = Start-Process -FilePath $vboxInstaller `
+                                -ArgumentList "--silent", "--msiparams", "REBOOT=ReallySuppress" `
+                                -PassThru -Wait
+        if ($vbProc.ExitCode -eq 0 -or $vbProc.ExitCode -eq 3010) {
+            Write-OK "VirtualBox $vboxVersion installed (exit $($vbProc.ExitCode))"
+            # Exit 3010 = success but reboot required — we suppress it; harmless here
+        } else {
+            Write-Fail "VirtualBox installer exited with code $($vbProc.ExitCode)"
+            Write-Warn "Run installer manually from $vboxInstaller to see error dialog."
+        }
         Remove-Item $vboxInstaller -Force -ErrorAction SilentlyContinue
-        Write-OK "VirtualBox installed from direct download"
     }
 
     # Refresh PATH so VBoxManage is accessible in this session
@@ -852,6 +868,7 @@ if (-not $GASEndpoint) {
         Write-Warn "You can email it manually if needed."
     }
 }
+
 
 
 
