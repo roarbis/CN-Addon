@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.2"   # increment each time fixes are applied
+$ScriptVersion = "1.3"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -227,6 +227,45 @@ if (Test-Path $vboxExe) {
         }
         Write-OK "Power throttling exceptions re-applied post-install"
     }
+}
+
+# Ensure VirtualBox shortcuts exist regardless of install path.
+# Silent / winget installs sometimes skip shortcut creation.
+# Windows 11 removed programmatic taskbar pinning — right-click the desktop
+# shortcut and choose "Pin to taskbar" manually after first run.
+$vboxGuiExe = "C:\Program Files\Oracle\VirtualBox\VirtualBox.exe"
+if (Test-Path $vboxGuiExe) {
+    $wsh = New-Object -ComObject WScript.Shell
+
+    # Start Menu — global (all users)
+    $smFolder = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Oracle VM VirtualBox"
+    if (-not (Test-Path $smFolder)) { New-Item -ItemType Directory $smFolder -Force | Out-Null }
+    $smLnk = "$smFolder\VirtualBox.lnk"
+    if (-not (Test-Path $smLnk)) {
+        $lnk = $wsh.CreateShortcut($smLnk)
+        $lnk.TargetPath       = $vboxGuiExe
+        $lnk.WorkingDirectory = Split-Path $vboxGuiExe
+        $lnk.Description      = "VirtualBox Manager"
+        $lnk.Save()
+        Write-OK "VirtualBox shortcut → Start Menu (all users)"
+    } else {
+        Write-OK "VirtualBox Start Menu shortcut already present"
+    }
+
+    # Desktop — common desktop (all users see it)
+    $desktopLnk = "$env:PUBLIC\Desktop\VirtualBox.lnk"
+    if (-not (Test-Path $desktopLnk)) {
+        $lnk = $wsh.CreateShortcut($desktopLnk)
+        $lnk.TargetPath       = $vboxGuiExe
+        $lnk.WorkingDirectory = Split-Path $vboxGuiExe
+        $lnk.Description      = "VirtualBox Manager"
+        $lnk.IconLocation     = "$vboxGuiExe,0"
+        $lnk.Save()
+        Write-OK "VirtualBox shortcut → Desktop (all users)"
+    } else {
+        Write-OK "VirtualBox Desktop shortcut already present"
+    }
+    Write-Info "(To add to Taskbar: right-click the Desktop shortcut → 'Pin to taskbar')"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -789,3 +828,4 @@ if (-not $GASEndpoint) {
         Write-Warn "You can email it manually if needed."
     }
 }
+
