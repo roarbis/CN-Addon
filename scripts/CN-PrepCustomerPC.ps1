@@ -449,34 +449,44 @@ if ($SkipVM) {
     }
     Write-Info "HA URL: http://{router-DHCP-IP}:8123 (check router for hostname 'homeassistant')"
 
-    # Register scheduled task so VM auto-starts on Windows boot (SYSTEM account, highest privileges)
+    # Register scheduled task so VM auto-starts on Windows boot.
+    # IMPORTANT: Must run as the current user (CNAdmin), NOT SYSTEM.
+    # VirtualBox VMs are registered per-user — SYSTEM has no VM registry and
+    # startvm silently finds nothing. S4U logon = runs as the specified user
+    # account without a stored password, even when no one is logged in.
     Write-Info "Registering VM auto-start scheduled task..."
-    $taskName   = "CN-StartHAOS"
-    $taskExists = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-    if ($taskExists) {
-        Write-OK "Scheduled task '$taskName' already exists — skipping"
-    } else {
-        $action    = New-ScheduledTaskAction `
-                         -Execute  $vboxExe `
-                         -Argument "startvm `"$VMName`" --type headless"
-        $trigger   = New-ScheduledTaskTrigger -AtStartup
-        $settings  = New-ScheduledTaskSettingsSet `
-                         -ExecutionTimeLimit (New-TimeSpan -Minutes 5) `
-                         -RestartCount 3 `
-                         -RestartInterval (New-TimeSpan -Minutes 1)
-        $principal = New-ScheduledTaskPrincipal `
-                         -UserId    "SYSTEM" `
-                         -LogonType ServiceAccount `
-                         -RunLevel  Highest
-        Register-ScheduledTask `
-            -TaskName  $taskName `
-            -Action    $action `
-            -Trigger   $trigger `
-            -Settings  $settings `
-            -Principal $principal `
-            -Force | Out-Null
-        Write-OK "Scheduled task '$taskName' created — VM will auto-start on every Windows boot"
-    }
+    $taskName  = "CN-StartHAOS"
+    $taskUser  = "$env:USERDOMAIN\$env:USERNAME"
+
+    $action    = New-ScheduledTaskAction `
+                     -Execute  $vboxExe `
+                     -Argument "startvm `"$VMName`" --type headless"
+
+    # 1-minute startup delay: gives VirtualBox COM server (VBoxSVC) time to
+    # initialise before VBoxManage tries to use it.
+    $trigger         = New-ScheduledTaskTrigger -AtStartup
+    $trigger.Delay   = 'PT1M'   # ISO 8601: 1 minute
+
+    $settings  = New-ScheduledTaskSettingsSet `
+                     -ExecutionTimeLimit (New-TimeSpan -Minutes 5) `
+                     -RestartCount       3 `
+                     -RestartInterval    (New-TimeSpan -Minutes 1) `
+                     -StartWhenAvailable $true    # run if missed (e.g. hard power-off)
+
+    $principal = New-ScheduledTaskPrincipal `
+                     -UserId    $taskUser `
+                     -LogonType S4U `
+                     -RunLevel  Highest
+
+    Register-ScheduledTask `
+        -TaskName  $taskName `
+        -Action    $action `
+        -Trigger   $trigger `
+        -Settings  $settings `
+        -Principal $principal `
+        -Force | Out-Null
+    Write-OK "Scheduled task '$taskName' created — VM will auto-start on every Windows boot"
+    Write-OK "  Runs as: $taskUser (S4U — no stored password, works without logon)"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
