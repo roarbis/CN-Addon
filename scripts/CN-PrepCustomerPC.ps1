@@ -66,7 +66,7 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.7"   # increment each time fixes are applied
+$ScriptVersion = "1.8"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
@@ -676,6 +676,28 @@ if ($SkipRustDesk) {
     }
 }
 
+# Add Windows Firewall rules for RustDesk so the "allow network access?" popup
+# never appears during or after install. Rules are idempotent (-ErrorAction SilentlyContinue
+# silently skips if a rule with that name already exists).
+if (Test-Path $rustdeskExe) {
+    Write-Info "Adding Windows Firewall rules for RustDesk..."
+    # Allow the executable (covers all ports RustDesk may use)
+    New-NetFirewallRule -DisplayName "RustDesk (In)"  -Direction Inbound  `
+        -Program $rustdeskExe -Action Allow -Profile Any `
+        -ErrorAction SilentlyContinue | Out-Null
+    New-NetFirewallRule -DisplayName "RustDesk (Out)" -Direction Outbound `
+        -Program $rustdeskExe -Action Allow -Profile Any `
+        -ErrorAction SilentlyContinue | Out-Null
+    # Explicit port rules as belt-and-braces (relay + direct connection ports)
+    New-NetFirewallRule -DisplayName "RustDesk TCP ports" -Direction Inbound `
+        -Protocol TCP -LocalPort 21115,21116,21117,21118,21119 `
+        -Action Allow -Profile Any -ErrorAction SilentlyContinue | Out-Null
+    New-NetFirewallRule -DisplayName "RustDesk UDP port" -Direction Inbound `
+        -Protocol UDP -LocalPort 21116 `
+        -Action Allow -Profile Any -ErrorAction SilentlyContinue | Out-Null
+    Write-OK "Firewall rules added for RustDesk (no popup on connect)"
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 8 — Configure RustDesk: permanent password + install as service
 # ─────────────────────────────────────────────────────────────────────────────
@@ -723,21 +745,26 @@ if ($SkipRustDesk) {
     Invoke-RustDesk -RdArgs "--install-service" | Out-Null
     Start-Sleep -Seconds 5
 
+    # RustDesk service name varies by version — search by name and display name
     $rdService = Get-Service -Name "RustDesk" -ErrorAction SilentlyContinue
-    if ($rdService) {
-        if ($rdService.Status -ne "Running") {
-            Start-Service -Name "RustDesk" -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
-        }
-        $rdService.Refresh()
-        Write-OK "RustDesk service: $($rdService.Status)"
-    } else {
-        Write-Warn "RustDesk service not found — it may use a different service name. Check services.msc."
+    if (-not $rdService) {
+        $rdService = Get-Service -ErrorAction SilentlyContinue |
+                     Where-Object { $_.Name -like "*rustdesk*" -or $_.DisplayName -like "*RustDesk*" } |
+                     Select-Object -First 1
     }
 
-    # Set service to auto-start
-    Set-Service -Name "RustDesk" -StartupType Automatic -ErrorAction SilentlyContinue
-    Write-OK "RustDesk service set to Automatic startup"
+    if ($rdService) {
+        if ($rdService.Status -ne "Running") {
+            Start-Service -Name $rdService.Name -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+            $rdService.Refresh()
+        }
+        Write-OK "RustDesk service '$($rdService.Name)': $($rdService.Status)"
+        Set-Service -Name $rdService.Name -StartupType Automatic -ErrorAction SilentlyContinue
+        Write-OK "RustDesk service set to Automatic startup"
+    } else {
+        Write-Warn "RustDesk service not found — may still be registering. Check services.msc after script."
+    }
 
     # Get RustDesk ID (may need a moment after service start)
     Start-Sleep -Seconds 5
@@ -877,6 +904,7 @@ if (-not $GASEndpoint) {
         Write-Warn "You can email it manually if needed."
     }
 }
+
 
 
 
