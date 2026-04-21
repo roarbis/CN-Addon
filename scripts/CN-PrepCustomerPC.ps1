@@ -65,13 +65,14 @@ function Write-Banner($msg)             {
     Write-Host "${ESC}[96m`n$line`n  $msg`n$line${ESC}[0m"
 }
 
-$TotalSteps = 11
+$TotalSteps    = 11
+$ScriptVersion = "1.2"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
 # ─────────────────────────────────────────────────────────────────────────────
 Clear-Host
-Write-Banner "Connect Nest — Customer PC Preparation Script v1.0"
+Write-Banner "Connect Nest — Customer PC Preparation Script v$ScriptVersion"
 Write-Info "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Write-Info "Machine: $env:COMPUTERNAME  |  User: $env:USERNAME"
 Write-Info ""
@@ -313,27 +314,43 @@ if ($SkipVM) {
 } elseif (-not (Test-Path $haosVdi)) {
     Write-Warn "HAOS VDI not found at $haosVdi — skipping VM creation"
 } else {
-    # Warm up the VirtualBox COM server (VBoxSVC) before any VBoxManage calls.
-    # Without this, each call cold-starts the COM server and can fail with
-    # REGDB_E_CLASSNOTREG (0x80040154) — especially on first run after install.
+    # Ensure VBoxSVC is running, then probe its COM interface.
+    # After a fresh VirtualBox install the COM server can take 5–30+ seconds
+    # to register — a fixed sleep is not reliable. Instead we use list vms
+    # (needed anyway to detect an existing VM) as the readiness probe and
+    # retry until it succeeds or we hit the 60-second timeout.
     $vboxSvc = Join-Path (Split-Path $vboxExe) "VBoxSVC.exe"
-    if (Test-Path $vboxSvc) {
+    $svcProc = Get-Process "VBoxSVC" -ErrorAction SilentlyContinue
+    if ($svcProc) {
+        Write-OK "VBoxSVC already running (PID $($svcProc.Id))"
+    } elseif (Test-Path $vboxSvc) {
         Write-Info "Starting VirtualBox COM server (VBoxSVC)..."
-        $svcProc = Get-Process "VBoxSVC" -ErrorAction SilentlyContinue
-        if (-not $svcProc) {
-            Start-Process $vboxSvc -ArgumentList "--auto-shutdown" -WindowStyle Hidden
-            Start-Sleep -Seconds 5   # give it time to register COM objects
-            Write-OK "VBoxSVC started"
-        } else {
-            Write-OK "VBoxSVC already running (PID $($svcProc.Id))"
-        }
+        Start-Process $vboxSvc -ArgumentList "--auto-shutdown" -WindowStyle Hidden
     }
 
-    # Check if VM already exists
-    $existingVMs = & $vboxExe list vms 2>&1
-    if ($existingVMs -match "`"$VMName`"") {
+    Write-Info "Waiting for VBoxSVC COM registration (up to 60s)..."
+    $existingVMs = $null
+    $vboxReady   = $false
+    for ($vboxWait = 1; $vboxWait -le 12; $vboxWait++) {
+        Start-Sleep -Seconds 5
+        $probe = & $vboxExe list vms 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $existingVMs = $probe
+            $vboxReady   = $true
+            Write-OK "VBoxSVC ready (took ~$($vboxWait * 5)s)"
+            break
+        }
+        Write-Info "  Not ready yet — attempt $vboxWait/12 ($($vboxWait * 5)s elapsed)..."
+    }
+    if (-not $vboxReady) {
+        Write-Fail "VBoxSVC COM did not respond after 60s."
+        Write-Warn "Likely cause: VirtualBox not installed cleanly (Hyper-V conflict?)."
+        Write-Warn "Fix: reboot and re-run. If it persists, reinstall VirtualBox."
+    }
+
+    if ($vboxReady -and ($existingVMs -match "`"$VMName`"")) {
         Write-OK "VM '$VMName' already exists — skipping creation"
-    } else {
+    } elseif ($vboxReady) {
         # Auto-detect the best network adapter for Bridged Networking
         # Priority: active Ethernet > active Wi-Fi > first available
         Write-Info "Auto-detecting best network adapter for Bridged Networking..."
@@ -388,7 +405,11 @@ if ($SkipVM) {
 
         # Create VM
         Write-Info "Creating VM '$VMName'..."
-        & $vboxExe createvm --name $VMName --ostype "Linux_64" --register | Out-Null
+        $createOut = & $vboxExe createvm --name $VMName --ostype "Linux_64" --register 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "createvm failed: $createOut"
+            Write-Warn "Cannot configure VM — check VirtualBox installation and re-run."
+        } else {
 
         # Configure resources
         & $vboxExe modifyvm $VMName `
@@ -422,7 +443,8 @@ if ($SkipVM) {
         & $vboxExe modifyvm $VMName --boot1 disk --boot2 none --boot3 none --boot4 none | Out-Null
 
         Write-OK "VM '$VMName' created successfully"
-    }
+        }  # end if ($createOut succeeded)
+    }      # end elseif ($vboxReady) — VM creation block
 
     # Check VM state before attempting start — avoid "already locked" error
     $vmState = & $vboxExe showvminfo $VMName --machinereadable 2>&1 |
@@ -471,7 +493,7 @@ if ($SkipVM) {
                      -ExecutionTimeLimit (New-TimeSpan -Minutes 5) `
                      -RestartCount       3 `
                      -RestartInterval    (New-TimeSpan -Minutes 1) `
-                     -StartWhenAvailable $true    # run if missed (e.g. hard power-off)
+                     -StartWhenAvailable             # switch — fires even after hard power-cycle
 
     $principal = New-ScheduledTaskPrincipal `
                      -UserId    $taskUser `
@@ -532,16 +554,29 @@ if ($SkipRustDesk) {
         $webClient2.DownloadFile($rdUrl, $rdInstaller)
         Write-OK "Download complete"
 
-        Write-Info "Installing RustDesk silently..."
+        Write-Info "Installing RustDesk silently (up to 3 minutes)..."
         if ($rdInstaller -match "\.msi$") {
-            Start-Process -Wait msiexec -ArgumentList "/i", $rdInstaller, "/quiet", "/norestart"
+            $rdProc = Start-Process msiexec `
+                          -ArgumentList "/i `"$rdInstaller`" /quiet /norestart" `
+                          -PassThru -WindowStyle Hidden
         } else {
-            Start-Process -Wait $rdInstaller -ArgumentList "--silent-install"
+            $rdProc = Start-Process $rdInstaller -ArgumentList "--silent-install" `
+                          -PassThru -WindowStyle Hidden
+        }
+        $rdDone = $rdProc.WaitForExit(180000)   # 3-minute hard timeout
+        if (-not $rdDone) {
+            $rdProc.Kill()
+            Write-Warn "RustDesk installer exceeded 3 minutes — killed. May still have installed."
         }
 
         Remove-Item $rdInstaller -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 3   # give installer time to finalise
 
+        # Tauri-based installers can spawn a child process — wait up to 30s for rustdesk.exe
+        Write-Info "Waiting for RustDesk installation to finalise..."
+        $rdWait = 0
+        while (-not (Test-Path $rustdeskExe) -and $rdWait -lt 30) {
+            Start-Sleep -Seconds 3; $rdWait += 3
+        }
         if (Test-Path $rustdeskExe) {
             Write-OK "RustDesk installed at $rustdeskExe"
         } else {
