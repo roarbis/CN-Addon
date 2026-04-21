@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Connect Nest — Customer PC Preparation Script
@@ -277,13 +277,10 @@ if (Test-Path $haosVdi) {
         Expand-Archive -Path $archivePath -DestinationPath $HAOSDestFolder -Force
 
         # Find extracted VDI/VMDK file
-        $extractedDisk = Get-ChildItem -Path $HAOSDestFolder -Filter "*.vdi","*.vmdk" |
-                         Where-Object { $_.Name -notmatch "VirtualBox" } |
+        # Note: -Filter only accepts a single string; use Where-Object for multi-extension matching
+        $extractedDisk = Get-ChildItem -Path $HAOSDestFolder -Recurse |
+                         Where-Object { $_.Extension -in '.vdi','.vmdk' -and $_.Name -notmatch 'VirtualBox' } |
                          Select-Object -First 1
-        if (-not $extractedDisk) {
-            $extractedDisk = Get-ChildItem -Path $HAOSDestFolder -Include "*.vdi","*.vmdk" -Recurse |
-                             Select-Object -First 1
-        }
         if ($extractedDisk) {
             Move-Item $extractedDisk.FullName $haosVdi -Force
             Write-OK "HAOS disk image saved to: $haosVdi"
@@ -316,6 +313,22 @@ if ($SkipVM) {
 } elseif (-not (Test-Path $haosVdi)) {
     Write-Warn "HAOS VDI not found at $haosVdi — skipping VM creation"
 } else {
+    # Warm up the VirtualBox COM server (VBoxSVC) before any VBoxManage calls.
+    # Without this, each call cold-starts the COM server and can fail with
+    # REGDB_E_CLASSNOTREG (0x80040154) — especially on first run after install.
+    $vboxSvc = Join-Path (Split-Path $vboxExe) "VBoxSVC.exe"
+    if (Test-Path $vboxSvc) {
+        Write-Info "Starting VirtualBox COM server (VBoxSVC)..."
+        $svcProc = Get-Process "VBoxSVC" -ErrorAction SilentlyContinue
+        if (-not $svcProc) {
+            Start-Process $vboxSvc -ArgumentList "--auto-shutdown" -WindowStyle Hidden
+            Start-Sleep -Seconds 5   # give it time to register COM objects
+            Write-OK "VBoxSVC started"
+        } else {
+            Write-OK "VBoxSVC already running (PID $($svcProc.Id))"
+        }
+    }
+
     # Check if VM already exists
     $existingVMs = & $vboxExe list vms 2>&1
     if ($existingVMs -match "`"$VMName`"") {
@@ -411,16 +424,58 @@ if ($SkipVM) {
         Write-OK "VM '$VMName' created successfully"
     }
 
-    # Start VM headless
-    Write-Info "Starting VM headless (HA will begin downloading ~1 GB on first boot)..."
-    & $vboxExe startvm $VMName --type headless | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-OK "VM '$VMName' started headless"
-        Write-Info "HA is now downloading its container images. This takes 10–20 min."
-        Write-Info "Check http://{dhcp-ip}:8123 periodically — HA Create Account page = ready."
-        Write-Info "Get the DHCP IP from your router's DHCP table (hostname: homeassistant)"
+    # Check VM state before attempting start — avoid "already locked" error
+    $vmState = & $vboxExe showvminfo $VMName --machinereadable 2>&1 |
+               Select-String 'VMState=' |
+               ForEach-Object { ($_ -replace 'VMState=|"','').Trim() }
+
+    if ($vmState -eq 'running') {
+        Write-OK "VM '$VMName' is already running — skipping start"
     } else {
-        Write-Warn "VM start returned exit code $LASTEXITCODE — check VirtualBox Manager"
+        Write-Info "VM state: '$vmState' — starting headless..."
+        $vmStarted = $false
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            $startOut = & $vboxExe startvm $VMName --type headless 2>&1
+            if ($LASTEXITCODE -eq 0) { $vmStarted = $true; break }
+            Write-Info "Start attempt $attempt failed — waiting 5s before retry..."
+            Start-Sleep -Seconds 5
+        }
+        if ($vmStarted) {
+            Write-OK "VM '$VMName' started headless"
+        } else {
+            Write-Warn "VM failed to start after 3 attempts: $startOut"
+            Write-Warn "Open VirtualBox Manager and start 'ConnectNest' manually, then re-run with -SkipVM."
+        }
+    }
+    Write-Info "HA URL: http://{router-DHCP-IP}:8123 (check router for hostname 'homeassistant')"
+
+    # Register scheduled task so VM auto-starts on Windows boot (SYSTEM account, highest privileges)
+    Write-Info "Registering VM auto-start scheduled task..."
+    $taskName   = "CN-StartHAOS"
+    $taskExists = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($taskExists) {
+        Write-OK "Scheduled task '$taskName' already exists — skipping"
+    } else {
+        $action    = New-ScheduledTaskAction `
+                         -Execute  $vboxExe `
+                         -Argument "startvm `"$VMName`" --type headless"
+        $trigger   = New-ScheduledTaskTrigger -AtStartup
+        $settings  = New-ScheduledTaskSettingsSet `
+                         -ExecutionTimeLimit (New-TimeSpan -Minutes 5) `
+                         -RestartCount 3 `
+                         -RestartInterval (New-TimeSpan -Minutes 1)
+        $principal = New-ScheduledTaskPrincipal `
+                         -UserId    "SYSTEM" `
+                         -LogonType ServiceAccount `
+                         -RunLevel  Highest
+        Register-ScheduledTask `
+            -TaskName  $taskName `
+            -Action    $action `
+            -Trigger   $trigger `
+            -Settings  $settings `
+            -Principal $principal `
+            -Force | Out-Null
+        Write-OK "Scheduled task '$taskName' created — VM will auto-start on every Windows boot"
     }
 }
 
@@ -506,21 +561,42 @@ if ($SkipRustDesk) {
         Write-Info "Auto-generated RustDesk password: $RustDeskPassword"
     }
 
+    # Helper: run RustDesk CLI with a hard timeout so it can never hang the script.
+    # NOTE: $Args is a reserved PS automatic variable — NEVER use it as a param name.
+    function Invoke-RustDesk {
+        param([string[]]$RdArgs, [int]$TimeoutSec = 15)
+        $proc = Start-Process -FilePath $rustdeskExe `
+                              -ArgumentList $RdArgs `
+                              -WindowStyle Hidden `
+                              -PassThru `
+                              -RedirectStandardOutput "$env:TEMP\rd_out.txt" `
+                              -RedirectStandardError  "$env:TEMP\rd_err.txt"
+        $finished = $proc.WaitForExit($TimeoutSec * 1000)
+        if (-not $finished) {
+            $proc.Kill()
+            Write-Warn "RustDesk '$($RdArgs -join ' ')' timed out after ${TimeoutSec}s — killed"
+        }
+        $out = if (Test-Path "$env:TEMP\rd_out.txt") { Get-Content "$env:TEMP\rd_out.txt" -Raw } else { "" }
+        return $out
+    }
+
     # Set permanent password
     Write-Info "Setting permanent password..."
-    & $rustdeskExe --password $RustDeskPassword 2>&1 | Out-Null
+    Invoke-RustDesk -RdArgs "--password", $RustDeskPassword | Out-Null
     Write-OK "Permanent password set"
 
     # Install RustDesk as a Windows service (runs at boot, before user login)
     Write-Info "Installing RustDesk as Windows service..."
-    & $rustdeskExe --install-service 2>&1 | Out-Null
-    Start-Sleep -Seconds 3
+    Invoke-RustDesk -RdArgs "--install-service" | Out-Null
+    Start-Sleep -Seconds 5
 
     $rdService = Get-Service -Name "RustDesk" -ErrorAction SilentlyContinue
     if ($rdService) {
         if ($rdService.Status -ne "Running") {
             Start-Service -Name "RustDesk" -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
         }
+        $rdService.Refresh()
         Write-OK "RustDesk service: $($rdService.Status)"
     } else {
         Write-Warn "RustDesk service not found — it may use a different service name. Check services.msc."
@@ -534,7 +610,7 @@ if ($SkipRustDesk) {
     Start-Sleep -Seconds 5
     $script:rustdeskID = ""
     try {
-        $idOutput = & $rustdeskExe --get-id 2>&1
+        $idOutput = Invoke-RustDesk -RdArgs "--get-id"
         $script:rustdeskID = ($idOutput | Select-String -Pattern "\d{9,}" |
                               Select-Object -First 1).Matches.Value
     } catch {}

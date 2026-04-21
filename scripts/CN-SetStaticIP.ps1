@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Locks the CN Hub Windows host to its current DHCP-assigned IP as a static IP.
   Run AT THE CUSTOMER SITE on D-Day, AFTER the NUC has fully booted on the
