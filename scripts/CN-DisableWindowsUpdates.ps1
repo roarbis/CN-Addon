@@ -46,7 +46,7 @@
 
   Author   : Connect Nest (product: ConnectHub)
   Requires : Windows 10/11, PowerShell 5.1+, Administrator
-  Version  : 1.1 (2026-04-22)
+  Version  : 1.2 (2026-04-22)
 #>
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
 param(
@@ -212,8 +212,40 @@ if (-not $SkipMetered) {
         $metKeyRel = 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\DefaultMediaCost'
         $metKeyPS  = "HKLM:\$metKeyRel"
 
-        # DefaultMediaCost is owned by TrustedInstaller — must take ownership first
-        # before any write is possible, even as Administrator.
+        # DefaultMediaCost is owned by TrustedInstaller. Even as Administrator,
+        # SeTakeOwnershipPrivilege exists in the elevated token but is NOT enabled
+        # by default — the .NET registry API won't honour TakeOwnership access until
+        # we explicitly activate it via AdjustTokenPrivileges.
+        Add-Type -ErrorAction SilentlyContinue -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public class CnPrivilege {
+    [DllImport("advapi32.dll", SetLastError=true)]
+    static extern bool OpenProcessToken(IntPtr hProcess, uint access, out IntPtr hToken);
+    [DllImport("advapi32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
+    static extern bool LookupPrivilegeValue(string host, string name, out long luid);
+    [DllImport("advapi32.dll", SetLastError=true)]
+    static extern bool AdjustTokenPrivileges(
+        IntPtr hToken, bool disable, ref TOKEN_PRIV newState,
+        uint bufLen, IntPtr prev, IntPtr retLen);
+    [DllImport("kernel32.dll")]
+    static extern IntPtr GetCurrentProcess();
+    [StructLayout(LayoutKind.Sequential, Pack=1)]
+    struct TOKEN_PRIV { public uint Count; public long Luid; public uint Attr; }
+    public static void Enable(string privilege) {
+        IntPtr tok;
+        OpenProcessToken(GetCurrentProcess(), 0x28, out tok);
+        long luid = 0;
+        LookupPrivilegeValue(null, privilege, out luid);
+        var tp = new TOKEN_PRIV { Count = 1, Luid = luid, Attr = 0x0002 };
+        AdjustTokenPrivileges(tok, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero);
+    }
+}
+'@
+        [CnPrivilege]::Enable("SeTakeOwnershipPrivilege")
+        [CnPrivilege]::Enable("SeRestorePrivilege")
+
+        # Take ownership of the key → Administrators
         $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey(
             $metKeyRel,
             [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,
@@ -224,7 +256,7 @@ if (-not $SkipMetered) {
         $regKey.SetAccessControl($acl)
         $regKey.Close()
 
-        # Now re-open with ChangePermissions and grant Administrators full control
+        # Re-open with ChangePermissions and grant Administrators full control
         $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey(
             $metKeyRel,
             [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,
@@ -242,7 +274,7 @@ if (-not $SkipMetered) {
         $regKey.SetAccessControl($acl)
         $regKey.Close()
 
-        # Safe to write now — only print [OK] if the write actually succeeds
+        # Write is safe now — only print [OK] if it actually succeeds
         $existing = (Get-ItemProperty $metKeyPS -ErrorAction SilentlyContinue).Ethernet
         if ($existing -eq 2) {
             Write-OK "Ethernet already marked as metered"
