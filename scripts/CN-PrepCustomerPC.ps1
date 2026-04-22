@@ -1,7 +1,7 @@
 ﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Connect Nest — Customer PC Preparation Script
+    Connect Nest — ConnectHub PC Preparation Script
 
 .DESCRIPTION
     Prepares a customer's Windows PC the day before an on-site visit.
@@ -13,7 +13,7 @@
       3. Disables Power Throttling for VirtualBox processes
       4. Installs VirtualBox silently
       5. Downloads the latest Home Assistant OS VDI image
-      6. Creates the ConnectNest VirtualBox VM (auto-detects best network adapter)
+      6. Creates the ConnectHub VirtualBox VM (auto-detects best network adapter)
       7. Starts the VM headless (HA begins downloading on first boot)
       8. Installs RustDesk silently
       9. Sets RustDesk permanent password and installs as service
@@ -21,7 +21,7 @@
      11. Emails summary to hello@connectnest.com.au via GAS (if -GASEndpoint provided)
 
 .NOTES
-    Author:  Connect Nest
+    Author:  Connect Nest (product: ConnectHub)
     Version: 1.0
     Date:    2026-04-06
 
@@ -66,13 +66,13 @@ function Write-Banner($msg)             {
 }
 
 $TotalSteps    = 11
-$ScriptVersion = "1.9"   # increment each time fixes are applied
+$ScriptVersion = "2.0"   # increment each time fixes are applied
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 0 — Header
 # ─────────────────────────────────────────────────────────────────────────────
 Clear-Host
-Write-Banner "Connect Nest — Customer PC Preparation Script v$ScriptVersion"
+Write-Banner "Connect Nest — ConnectHub PC Preparation Script v$ScriptVersion"
 Write-Info "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Write-Info "Machine: $env:COMPUTERNAME  |  User: $env:USERNAME"
 Write-Info ""
@@ -393,7 +393,7 @@ if (Test-Path $haosVdi) {
     try {
         $releaseInfo = Invoke-RestMethod `
             -Uri "https://api.github.com/repos/home-assistant/operating-system/releases/latest" `
-            -Headers @{ "User-Agent" = "ConnectNest-PrepScript/1.0" }
+            -Headers @{ "User-Agent" = "ConnectHub-PrepScript/1.0" }
         $haosVersion = $releaseInfo.tag_name   # e.g. "13.1"
         Write-Info "Latest HAOS version: $haosVersion"
 
@@ -452,9 +452,9 @@ if (Test-Path $haosVdi) {
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 6 — Create VirtualBox VM
 # ─────────────────────────────────────────────────────────────────────────────
-Write-Step 6 $TotalSteps "Creating ConnectNest VirtualBox VM"
+Write-Step 6 $TotalSteps "Creating ConnectHub VirtualBox VM"
 
-$VMName = "ConnectNest"
+$VMName = "ConnectHub"
 
 if ($SkipVM) {
     Write-Warn "SkipVM flag set — skipping VM creation"
@@ -557,7 +557,7 @@ if ($SkipVM) {
         }
 
         Write-Info "Selected adapter: $chosenAdapter"
-        Write-Info "(To change: VirtualBox Manager → ConnectNest → Settings → Network → Adapter 1)"
+        Write-Info "(To change: VirtualBox Manager → ConnectHub → Settings → Network → Adapter 1)"
         Write-Info ""
 
         # Create VM
@@ -623,7 +623,7 @@ if ($SkipVM) {
             Write-OK "VM '$VMName' started headless"
         } else {
             Write-Warn "VM failed to start after 3 attempts: $startOut"
-            Write-Warn "Open VirtualBox Manager and start 'ConnectNest' manually, then re-run with -SkipVM."
+            Write-Warn "Open VirtualBox Manager and start 'ConnectHub' manually, then re-run with -SkipVM."
         }
     }
     Write-Info "HA URL: http://{router-DHCP-IP}:8123 (check router for hostname 'homeassistant')"
@@ -684,7 +684,7 @@ if ($SkipRustDesk) {
     try {
         $rdRelease = Invoke-RestMethod `
             -Uri "https://api.github.com/repos/rustdesk/rustdesk/releases/latest" `
-            -Headers @{ "User-Agent" = "ConnectNest-PrepScript/1.0" }
+            -Headers @{ "User-Agent" = "ConnectHub-PrepScript/1.0" }
 
         # Find Windows x86-64 installer (.exe, not .msi, not sciter)
         $rdAsset = $rdRelease.assets | Where-Object {
@@ -879,13 +879,13 @@ $vmDhcpNote  = "Check router DHCP table (hostname: homeassistant) for current IP
 
 $summary = @"
 ============================================================
-  CONNECT NEST — SETUP SUMMARY
+  CONNECT NEST — CONNECTHUB SETUP SUMMARY
   Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
   Machine:   $env:COMPUTERNAME
 ============================================================
 
 VIRTUALBOX VM
-  VM Name:        ConnectNest
+  VM Name:        ConnectHub
   RAM:            $VMRamMB MB
   CPUs:           $VMCpus
   HAOS Disk:      $haosVdi
