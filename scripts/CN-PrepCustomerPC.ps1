@@ -210,6 +210,22 @@ Set-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR' `
     -Name 'AllowGameDVR' -Value 0 -Type DWord -Force
 Write-OK "GameDVR / Xbox Game Bar disabled"
 
+# Set current user's password to never expire
+# CNAdmin is the sole operator account — a forced expiry would lock out the
+# scheduled task (S4U) and remote access without anyone on-site to fix it.
+$adminUser = Get-LocalUser -Name $env:USERNAME -ErrorAction SilentlyContinue
+if ($adminUser) {
+    Set-LocalUser -Name $env:USERNAME -PasswordNeverExpires $true -ErrorAction SilentlyContinue
+    $check = (Get-LocalUser -Name $env:USERNAME).PasswordNeverExpires
+    if ($check) {
+        Write-OK "Password set to never expire for user: $env:USERNAME"
+    } else {
+        Write-Warn "Could not confirm PasswordNeverExpires for '$env:USERNAME' — check manually in lusrmgr.msc"
+    }
+} else {
+    Write-Warn "Local user '$env:USERNAME' not found — skipping password expiry setting"
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 3 — Power Throttling: Disable for VirtualBox processes
 # (Runs now so the policy is set before VirtualBox is installed.

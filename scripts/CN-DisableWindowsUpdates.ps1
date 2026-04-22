@@ -44,9 +44,9 @@
     2. Open Windows Update and check for updates manually
     3. After updates complete, re-run this script without -Undo
 
-  Author   : ConnectNest
+  Author   : Connect Nest (product: ConnectHub)
   Requires : Windows 10/11, PowerShell 5.1+, Administrator
-  Version  : 1.0 (2026-04-21)
+  Version  : 1.1 (2026-04-22)
 #>
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
 param(
@@ -209,30 +209,52 @@ if (-not $SkipMetered) {
     Write-Head "7. Marking primary Ethernet adapter as metered"
     Write-Info "WU will not auto-download on metered connections."
     try {
-        # Find the primary physical adapter with a gateway
-        $route   = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue |
-                   Sort-Object RouteMetric | Select-Object -First 1
-        if ($route) {
-            $ifIdx   = $route.ifIndex
-            $profile = Get-NetConnectionProfile -InterfaceIndex $ifIdx -ErrorAction SilentlyContinue
-            if ($profile -and $PSCmdlet.ShouldProcess("Interface $ifIdx ($($profile.Name))", "Set as metered")) {
-                # Metered = set via WMI (no direct cmdlet in PS 5.1)
-                $cost = New-Object -ComObject HNetCfg.FwPolicy2 -ErrorAction SilentlyContinue
-                # Use registry fallback for metered flag
-                $metKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\DefaultMediaCost"
-                $existing = (Get-ItemProperty $metKey -ErrorAction SilentlyContinue).Ethernet
-                if ($existing -ne 2) {
-                    Set-RegValue $metKey 'Ethernet' 2  # 1=unmetered, 2=metered
-                    Write-OK "Ethernet marked as metered (cost=2)"
-                } else {
-                    Write-OK "Ethernet already marked as metered"
-                }
-            }
+        $metKeyRel = 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\DefaultMediaCost'
+        $metKeyPS  = "HKLM:\$metKeyRel"
+
+        # DefaultMediaCost is owned by TrustedInstaller — must take ownership first
+        # before any write is possible, even as Administrator.
+        $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey(
+            $metKeyRel,
+            [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,
+            [System.Security.AccessControl.RegistryRights]::TakeOwnership
+        )
+        $acl = $regKey.GetAccessControl([System.Security.AccessControl.AccessControlSections]::Owner)
+        $acl.SetOwner([System.Security.Principal.NTAccount]'Administrators')
+        $regKey.SetAccessControl($acl)
+        $regKey.Close()
+
+        # Now re-open with ChangePermissions and grant Administrators full control
+        $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey(
+            $metKeyRel,
+            [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,
+            [System.Security.AccessControl.RegistryRights]::ChangePermissions
+        )
+        $acl  = $regKey.GetAccessControl()
+        $rule = New-Object System.Security.AccessControl.RegistryAccessRule(
+            [System.Security.Principal.NTAccount]'Administrators',
+            'FullControl',
+            [System.Security.AccessControl.InheritanceFlags]::None,
+            [System.Security.AccessControl.PropagationFlags]::None,
+            [System.Security.AccessControl.AccessControlType]::Allow
+        )
+        $acl.SetAccessRule($rule)
+        $regKey.SetAccessControl($acl)
+        $regKey.Close()
+
+        # Safe to write now — only print [OK] if the write actually succeeds
+        $existing = (Get-ItemProperty $metKeyPS -ErrorAction SilentlyContinue).Ethernet
+        if ($existing -eq 2) {
+            Write-OK "Ethernet already marked as metered"
         } else {
-            Write-Warn "No default route found — skipping metered flag"
+            if ($PSCmdlet.ShouldProcess($metKeyPS, "Set Ethernet cost=2 (metered)")) {
+                Set-ItemProperty -Path $metKeyPS -Name 'Ethernet' -Value 2 -Type DWord -Force -ErrorAction Stop
+                Write-OK "Ethernet marked as metered (cost=2)"
+            }
         }
     } catch {
-        Write-Warn "Could not set metered connection: $_ — set manually in Settings > Network > (adapter) > Metered"
+        Write-Warn "Could not mark Ethernet as metered: $_"
+        Write-Info "  Set manually: Settings > Network > adapter > Properties > Metered connection"
     }
 } else {
     Write-Info "Skipping metered connection (-SkipMetered specified)"
