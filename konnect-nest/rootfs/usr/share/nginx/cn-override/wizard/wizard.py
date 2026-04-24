@@ -14,6 +14,17 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN', '')
+if not SUPERVISOR_TOKEN:
+    try:
+        with open('/run/s6/container_environment/SUPERVISOR_TOKEN') as _f:
+            SUPERVISOR_TOKEN = _f.read().strip()
+        if SUPERVISOR_TOKEN:
+            print('[CN Wizard] Loaded SUPERVISOR_TOKEN from s6 env dir', flush=True)
+    except Exception:
+        pass
+if not SUPERVISOR_TOKEN:
+    print('[CN Wizard] WARNING: SUPERVISOR_TOKEN is empty — all Supervisor API calls will fail', flush=True)
+
 HA_PORT = int(os.environ.get('CN_HA_PORT', '8123'))
 WIZARD_STATE_FILE = '/data/cn_wizard_state.json'
 

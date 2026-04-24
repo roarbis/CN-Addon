@@ -23,9 +23,24 @@ CERTFILE=$(jq --raw-output '.certfile // "fullchain.pem"' /data/options.json)
 KEYFILE=$(jq --raw-output '.keyfile // "privkey.pem"' /data/options.json)
 
 info "============================================"
-info "  Connect Nest v2025.3.5"
+info "  Connect Nest v2025.3.6"
 info "  Your smart home, beautifully connected."
 info "============================================"
+
+# ─── Ensure SUPERVISOR_TOKEN is available ──────────────────
+# HA Supervisor writes the token to the s6 env dir.
+# If it wasn't inherited (e.g. subshell quirks), load it explicitly.
+if [[ -z "${SUPERVISOR_TOKEN:-}" ]]; then
+    _TOKEN_FILE="/run/s6/container_environment/SUPERVISOR_TOKEN"
+    if [[ -f "$_TOKEN_FILE" ]]; then
+        SUPERVISOR_TOKEN=$(cat "$_TOKEN_FILE")
+        export SUPERVISOR_TOKEN
+        info "SUPERVISOR_TOKEN loaded from s6 env dir"
+    else
+        warn "SUPERVISOR_TOKEN not found — Supervisor API calls will fail (hassio_api may not be active)"
+    fi
+fi
+info "SUPERVISOR_TOKEN present: $([[ -n "${SUPERVISOR_TOKEN:-}" ]] && echo yes || echo NO)"
 info "HA backend port: ${HA_PORT}"
 info "SSL enabled: ${SSL}"
 
