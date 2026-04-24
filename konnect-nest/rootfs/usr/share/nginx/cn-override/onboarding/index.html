@@ -431,7 +431,7 @@ function applyConfig(cfg) {
   if (cfg.zigbee) {
     collected.z2m_ip         = cfg.zigbee.coordinator_ip   || '';
     collected.z2m_port       = cfg.zigbee.coordinator_port || 6638;
-    collected.z2m_adapter    = cfg.zigbee.adapter          || 'ember';
+    collected.z2m_adapter    = cfg.zigbee.adapter          || 'zstack';
   }
   if (cfg.mqtt) {
     collected.mqtt_username  = cfg.mqtt.username           || 'cn_mqtt';
@@ -804,30 +804,71 @@ function renderRestart() {
 }
 
 async function doRestart() {
-  document.getElementById('restart-area').innerHTML = `
+  const area = document.getElementById('restart-area');
+  area.innerHTML = `
     <div class="restart-anim">
       <div class="big-spinner"></div>
-      <p>Restarting Home Assistant…</p>
-      <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">Waiting for HA to come back online</p>
+      <p id="restart-msg">Triggering Home Assistant restart…</p>
+      <p id="restart-hint" style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">This can take 30–90 seconds. Do not close this tab.</p>
+      <p id="restart-elapsed" style="font-size:0.75rem;color:var(--text-dim);margin-top:0.35rem"></p>
     </div>`;
+
+  // Step 1: fire-and-forget trigger (backend returns immediately now)
   try {
     const r = await post('/step/restart', {});
-    if (r.ok) {
-      document.getElementById('restart-area').innerHTML = '<div class="alert alert-success">✓ Home Assistant is back online</div>';
-      setTimeout(next, 1200);
-    } else {
-      document.getElementById('restart-area').innerHTML = `
-        <div class="alert alert-warn">⚠️ ${r.message}</div>
-        <div class="btn-actions"><button class="btn btn-primary" onclick="next()">Continue anyway →</button></div>`;
+    if (!r.ok) {
+      area.innerHTML = `
+        <div class="alert alert-error">Could not trigger restart: ${r.message || 'unknown error'}</div>
+        <div class="btn-actions">
+          <button class="btn btn-primary" onclick="doRestart()">Retry</button>
+          <button class="btn btn-secondary" onclick="next()">Skip</button>
+        </div>`;
+      return;
     }
   } catch(e) {
-    document.getElementById('restart-area').innerHTML = `
-      <div class="alert alert-error">Error: ${e.message}</div>
-      <div class="btn-actions">
-        <button class="btn btn-primary" onclick="doRestart()">Retry</button>
-        <button class="btn btn-secondary" onclick="next()">Skip</button>
-      </div>`;
+    // Backend may already be restarting — swallow and poll anyway
+    console.warn('Restart trigger request failed (expected if backend already down):', e);
   }
+
+  // Step 2: poll /api/status until HA + wizard backend are both reachable again
+  document.getElementById('restart-msg').textContent = 'Waiting for Home Assistant to come back online…';
+  const startedAt = Date.now();
+  const MAX_MS    = 10 * 60 * 1000; // 10 min
+  const INTERVAL  = 5000;           // 5 s
+
+  async function pollOnce() {
+    try {
+      const res = await fetch('/onboarding/api/status', { cache: 'no-store' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      return !!data.ha_online;
+    } catch(_) {
+      return false; // addon backend still down or network glitch
+    }
+  }
+
+  // Initial short delay to let HA begin shutting down before we start polling
+  await new Promise(r => setTimeout(r, 8000));
+
+  while (Date.now() - startedAt < MAX_MS) {
+    const elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
+    const el = document.getElementById('restart-elapsed');
+    if (el) el.textContent = `Elapsed: ${elapsedSec}s`;
+    if (await pollOnce()) {
+      area.innerHTML = '<div class="alert alert-success">✓ Home Assistant is back online</div>';
+      setTimeout(next, 1200);
+      return;
+    }
+    await new Promise(r => setTimeout(r, INTERVAL));
+  }
+
+  // Timed out after 10 min
+  area.innerHTML = `
+    <div class="alert alert-warn">⚠️ HA did not come back online within 10 minutes. Check the HA Add-ons page manually, then continue.</div>
+    <div class="btn-actions">
+      <button class="btn btn-primary" onclick="doRestart()">Retry</button>
+      <button class="btn btn-secondary" onclick="next()">Continue anyway →</button>
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -913,8 +954,8 @@ function renderZigbee() {
         <div class="field">
           <label>Adapter Type</label>
           <select id="z2m-adapter">
-            <option value="ember" ${(collected.z2m_adapter||'ember')==='ember'?'selected':''}>Ember / EZSP (SLZB-06)</option>
-            <option value="zstack" ${(collected.z2m_adapter||'')==='zstack'?'selected':''}>ZStack (CC2652)</option>
+            <option value="zstack" ${(collected.z2m_adapter||'zstack')==='zstack'?'selected':''}>ZStack (SLZB-06 default)</option>
+            <option value="ember"  ${(collected.z2m_adapter||'')==='ember'?'selected':''}>Ember / EZSP</option>
             <option value="deconz" ${(collected.z2m_adapter||'')==='deconz'?'selected':''}>deCONZ (ConBee)</option>
           </select>
         </div>
@@ -946,7 +987,7 @@ async function doZigbee() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Installing Zigbee2MQTT…';
   try {
     const r = await post('/step/zigbee', {
-      coordinator_ip: ip, coordinator_port: port,
+      coordinator_ip: ip, coordinator_port: port, adapter: adapter,
       mqtt_username: collected.mqtt_username || 'cn_mqtt', mqtt_password: pass,
     });
     if (r.ok) {
@@ -1245,13 +1286,21 @@ async function renderDone() {
         ℹ️ Apply the CN dark theme: HA → Profile → Theme → select <strong>cn_dark</strong> → Save
       </div>
       <div class="btn-actions" style="margin-top:1.5rem">
-        <a href="/" class="btn btn-primary">Open Connect Nest →</a>
+        <button class="btn btn-primary" onclick="openHaMain()">Open Home Assistant →</button>
       </div>
     </div>`;
   updateProgress();
 }
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
+function openHaMain() {
+  // Strip :7080 (direct wizard access) and redirect to HA Core on :8123.
+  // If the wizard was opened via HA sidebar ingress, just go to site root.
+  const host = window.location.hostname;
+  const viaIngress = window.location.port === '' || window.location.port === '8123';
+  window.location.href = viaIngress ? '/' : `http://${host}:8123/`;
+}
+
 function showMsg(el, type, text) {
   el.className = `alert alert-${type}`;
   el.textContent = text;
